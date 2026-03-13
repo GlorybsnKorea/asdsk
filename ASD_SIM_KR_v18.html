@@ -51,7 +51,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
   </div>
   <div style="padding:20px 24px 24px 24px;font-size:13.5px;line-height:2">
     <div style="background:#2a3a28;color:#a0d890;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:12px;line-height:1.8">
-      <b style="color:#edc740;font-size:14px">ASD 예인선 3D 브릿지 시뮬레이터</b><br>Azimuth Stern Drive (ASD) 예인선의 3D 조선 시뮬레이터입니다. 3인칭 시점에서 Z-Drive 추력 벡터링을 확인할 수 있습니다.
+      <b style="color:#edc740;font-size:14px">ASD 예인선 3D 브릿지 시뮬레이터</b><br>ASD 예인선의 3D 조선 시뮬레이터입니다. 3인칭 시점에서 Z-Drive 추력 벡터링을 확인할 수 있습니다.
     </div>
     <b style="color:#0066aa;font-size:15px">🎮 조작 방법</b>
     <table style="width:100%;border-collapse:collapse;margin:8px 0 16px 0;font-size:12.5px">
@@ -72,7 +72,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 <div id="bridgewrap">
   <canvas id="bridgeCanvas"></canvas>
   <svg id="winFrame" xmlns="http://www.w3.org/2000/svg" style="display:none"></svg>
-  <div id="keyhint">Steer: A/D · Port CPP: W/S · Stbd CPP: ↑/↓<br>P-Gov: Q/E · S-Gov: Z/X · Play: P · E-Stop: Space</div>
+  <div id="keyhint">조타: A/D · 좌현CPP: W/S · 우현CPP: ↑/↓<br>좌현거버너: Q/E · 우현거버너: Z/X · 실행: P · 긴급정지: Space</div>
   <div id="dbg"></div>
   <div id="dirBox">정지</div>
 </div>
@@ -86,9 +86,9 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
   <div style="display:flex;flex-direction:column;align-items:center;gap:0">
     <div class="sec-title">스티어링 — 콤비네이션 핸들</div>
     <div style="display:flex;align-items:flex-start;gap:4px">
-      <div class="gc"><span class="gt" style="color:#ff6666">PORT</span><canvas id="portGauge" width="170" height="175"></canvas></div>
+      <div class="gc"><span class="gt" style="color:#ff6666">좌현</span><canvas id="portGauge" width="170" height="175"></canvas></div>
       <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
-      <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
+      <div class="gc"><span class="gt" style="color:#66ff88">우현</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
@@ -675,8 +675,8 @@ function uP(){
   var ptR=getPortThrust(ship.pt,ship.st)*D, sbR=getStbdThrust(ship.sb,ship.st)*D;
   var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE, sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
-  ship.vx+=(sfx*cH-sfy*sH)*0.012*dt; ship.vy+=(sfx*sH+sfy*cH)*0.012*dt;
-  ship.om+=((-4)*(-Math.cos(ptR)*ptE)-18*(Math.sin(ptR)*ptE)+4*(-Math.cos(sbR)*sbE)-18*(Math.sin(sbR)*sbE))*0.00005*dt;
+  ship.vx+=(sfx*cH-sfy*sH)*0.006*dt; ship.vy+=(sfx*sH+sfy*cH)*0.006*dt;
+  ship.om+=((-4)*(-Math.cos(ptR)*ptE)-18*(Math.sin(ptR)*ptE)+4*(-Math.cos(sbR)*sbE)-18*(Math.sin(sbR)*sbE))*0.000025*dt;
   ship.vx*=Math.pow(0.988,dt); ship.vy*=Math.pow(0.988,dt); ship.om*=Math.pow(0.975,dt);
   var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; lV*=Math.pow(0.93,dt);
   ship.vx=fV*sH+lV*cH; ship.vy=-fV*cH+lV*sH; 
@@ -744,9 +744,9 @@ function updateBridgeView(t){
   
   // Port wake — CONTINUOUS while playing with power
   if(playing && pPwr>0.005){
-    // Nozzle dir in ship-local frame (0=bow/-Z, 90=stbd/+X)
     var pNozRad=pNozDeg*D;
-    var pExhLocalX=Math.sin(pNozRad), pExhLocalZ=-Math.cos(pNozRad);
+    var pCppSign=ship.pCPP>=0?1:-1;  // REVERSE when AS!
+    var pExhLocalX=Math.sin(pNozRad)*pCppSign, pExhLocalZ=-Math.cos(pNozRad)*pCppSign;
     // Local→World rotation
     var pExhWX=pExhLocalX*cosH - pExhLocalZ*sinH;
     var pExhWZ=pExhLocalX*sinH + pExhLocalZ*cosH;
@@ -764,7 +764,8 @@ function updateBridgeView(t){
   // Stbd wake — CONTINUOUS
   if(playing && sPwr>0.005){
     var sNozRad=sNozDeg*D;
-    var sExhLocalX=Math.sin(sNozRad), sExhLocalZ=-Math.cos(sNozRad);
+    var sCppSign=ship.sCPP>=0?1:-1;  // REVERSE when AS!
+    var sExhLocalX=Math.sin(sNozRad)*sCppSign, sExhLocalZ=-Math.cos(sNozRad)*sCppSign;
     var sExhWX=sExhLocalX*cosH - sExhLocalZ*sinH;
     var sExhWZ=sExhLocalX*sinH + sExhLocalZ*cosH;
     var sSpd=2+sPwr*8;

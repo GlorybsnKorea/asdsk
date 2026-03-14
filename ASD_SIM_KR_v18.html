@@ -88,7 +88,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <div style="display:flex;align-items:flex-start;gap:4px">
       <div class="gc"><span class="gt" style="color:#ff6666">좌현</span><canvas id="portGauge" width="170" height="175"></canvas></div>
       <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
-      <div class="gc"><span class="gt" style="color:#66ff88">우현</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
+      <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
@@ -306,13 +306,14 @@ var dockGroup=new THREE.Group();scene.add(dockGroup);
 
 // ── 3D TUGBOAT MODEL (BUILT-IN — no external files needed) ──
 var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
+window.whParts=[];
 (function buildTug(){
   // === MATERIALS ===
   var hullDark = new THREE.MeshPhongMaterial({color:0x08081a,flatShading:false});
-  var hullBlue = new THREE.MeshPhongMaterial({color:0x151530});
+  var hullBlue = new THREE.MeshPhongMaterial({color:0x111111});
   var redWL = new THREE.MeshPhongMaterial({color:0xcc1111});
   var deckGrey = new THREE.MeshPhongMaterial({color:0x555560});
-  var deckDark = new THREE.MeshPhongMaterial({color:0x3a3a40});
+  var deckDark = new THREE.MeshPhongMaterial({color:0x6db86d});
   var deckGreen = new THREE.MeshPhongMaterial({color:0x3a5a3a});
   var whMat = new THREE.MeshPhongMaterial({color:0xddddc8});
   var winMat = new THREE.MeshPhongMaterial({color:0x3366aa,transparent:true,opacity:0.65});
@@ -366,7 +367,7 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
 
   // Upper hull (above waterline — slightly narrower)
   var upperPlan = makeHullShape(11.4, 41, 0.35, 5.2);
-  var upperGeo = new THREE.ExtrudeGeometry(upperPlan,{depth:3,bevelEnabled:true,bevelThickness:0.3,bevelSize:0.3,bevelSegments:2});
+  var upperGeo = new THREE.ExtrudeGeometry(upperPlan,{depth:3,bevelEnabled:true,bevelThickness:1.5,bevelSize:1.5,bevelSegments:2});
   var upperMesh = new THREE.Mesh(upperGeo, hullBlue);
   upperMesh.rotation.x = -Math.PI/2;
   upperMesh.position.set(0, 3, 0);
@@ -403,13 +404,15 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
 
   // Raised forecastle deck
   var fcPlan = new THREE.Shape();
-  fcPlan.moveTo(-5,-8);
-  fcPlan.bezierCurveTo(-4.5,-11, -3.5,-15, -2.5,-18);
-  fcPlan.bezierCurveTo(-1,-20, -0.3,-20.5, 0,-21);
-  fcPlan.bezierCurveTo(0.3,-20.5, 1,-20, 2.5,-18);
-  fcPlan.bezierCurveTo(3.5,-15, 4.5,-11, 5,-8);
+  fcPlan.moveTo(-5.2,-6);
+  fcPlan.lineTo(-5.2,-10);
+  fcPlan.bezierCurveTo(-5.1,-13, -4.5,-16, -3.5,-18);
+  fcPlan.bezierCurveTo(-2,-19.8, -0.8,-20.5, 0,-20.8);
+  fcPlan.bezierCurveTo(0.8,-20.5, 2,-19.8, 3.5,-18);
+  fcPlan.bezierCurveTo(4.5,-16, 5.1,-13, 5.2,-10);
+  fcPlan.lineTo(5.2,-6);
   fcPlan.closePath();
-  var fcGeo2 = new THREE.ExtrudeGeometry(fcPlan,{depth:0.2,bevelEnabled:false});
+  var fcGeo2 = new THREE.ExtrudeGeometry(fcPlan,{depth:0.8,bevelEnabled:false});
   var fcMesh2 = new THREE.Mesh(fcGeo2, deckDark);
   fcMesh2.rotation.x = -Math.PI/2;
   fcMesh2.position.set(0, 6.6, 0);
@@ -427,10 +430,10 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
   var whGeo2 = new THREE.ExtrudeGeometry(whShape2,{depth:6.5,bevelEnabled:true,bevelThickness:0.2,bevelSize:0.2,bevelSegments:2});
   var whMesh2 = new THREE.Mesh(whGeo2, whMat);
   whMesh2.position.set(0,6.2,9.5);whMesh2.rotation.y=Math.PI;
-  ownShipGrp.add(whMesh2);
+  ownShipGrp.add(whMesh2);window.whParts.push(whMesh2);
   // Roof
   var roofMesh2 = new THREE.Mesh(new THREE.BoxGeometry(7.8,0.25,7.2),new THREE.MeshPhongMaterial({color:0x999999}));
-  roofMesh2.position.set(0,11.1,6.2);ownShipGrp.add(roofMesh2);
+  roofMesh2.position.set(0,11.1,6.2);ownShipGrp.add(roofMesh2);window.whParts.push(roofMesh2);
   // Windows front (5 panels, slightly angled)
   for(var wp2=-2;wp2<=2;wp2++){
     var wf2=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.6,0.12),winMat);
@@ -450,17 +453,17 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
 
   // === FUNNEL ===
   var fun2=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.85,3.2,12),funnelMat);
-  fun2.position.set(1.3,12.8,7.5);ownShipGrp.add(fun2);
+  fun2.position.set(1.3,12.8,7.5);ownShipGrp.add(fun2);window.whParts.push(fun2);
   var ftop2=new THREE.Mesh(new THREE.CylinderGeometry(0.65,0.55,0.4,12),blackMat);
-  ftop2.position.set(1.3,14.6,7.5);ownShipGrp.add(ftop2);
+  ftop2.position.set(1.3,14.6,7.5);ownShipGrp.add(ftop2);window.whParts.push(ftop2);
 
   // === MAST & RADAR ===
   var mast3=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.16,7,6),mastMat);
-  mast3.position.set(0,14.5,6);ownShipGrp.add(mast3);
+  mast3.position.set(0,14.5,6);ownShipGrp.add(mast3);window.whParts.push(mast3);
   var radar2=new THREE.Mesh(new THREE.BoxGeometry(2.2,0.12,0.5),yellowMat);
-  radar2.position.set(0,18.2,6);ownShipGrp.add(radar2);
+  radar2.position.set(0,18.2,6);ownShipGrp.add(radar2);window.whParts.push(radar2);
   var mlt2=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,4),new THREE.MeshBasicMaterial({color:0xffffff}));
-  mlt2.position.set(0,18.5,6);ownShipGrp.add(mlt2);
+  mlt2.position.set(0,18.5,6);ownShipGrp.add(mlt2);window.whParts.push(mlt2);
 
   // === BULWARKS (following hull plan contour) ===
   var bwPts=[
@@ -473,7 +476,7 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
     var ba2a=Math.atan2(bb2.x-ba2.x,bb2.z-ba2.z);
     [{s:1},{s:-1}].forEach(function(sd){
       var bm2=new THREE.Mesh(new THREE.BoxGeometry(0.15,1.2,bl2),railMat);
-      bm2.position.set(sd.s*(ba2.x+bb2.x)/2,7,(ba2.z+bb2.z)/2);bm2.rotation.y=-ba2a*sd.s;ownShipGrp.add(bm2);
+      bm2.position.set(sd.s*(ba2.x+bb2.x)/2,7,(ba2.z+bb2.z)/2);bm2.rotation.y=-ba2a*sd.s;ownShipGrp.add(bm2);window.whParts.push(bm2);
     });
   }
 
@@ -484,66 +487,66 @@ var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
     if(fz3>16)fxAt2=Math.max(3,5.3-(fz3-16)*0.5);
     [{s:1},{s:-1}].forEach(function(sd){
       var fd2=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.7,1.6),fenderMat);
-      fd2.position.set(sd.s*fxAt2,3.8,fz3);ownShipGrp.add(fd2);
+      fd2.position.set(sd.s*fxAt2,3.8,fz3);ownShipGrp.add(fd2);window.whParts.push(fd2);
     });
   }
 
   // === DECK EQUIPMENT ===
   // Tow winch (large, center)
   var twBase=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.2,2),bollMat);
-  twBase.position.set(0,7,1);ownShipGrp.add(twBase);
+  twBase.position.set(0,7,1);ownShipGrp.add(twBase);window.whParts.push(twBase);
   var twDrum=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,2.4,10),new THREE.MeshPhongMaterial({color:0x555555}));
-  twDrum.rotation.z=Math.PI/2;twDrum.position.set(0,7.8,1);ownShipGrp.add(twDrum);
+  twDrum.rotation.z=Math.PI/2;twDrum.position.set(0,7.8,1);ownShipGrp.add(twDrum);window.whParts.push(twDrum);
   // Aft tow winch
   var twAft=new THREE.Mesh(new THREE.BoxGeometry(2,1,1.5),bollMat);
-  twAft.position.set(0,6.8,14);ownShipGrp.add(twAft);
+  twAft.position.set(0,6.8,14);ownShipGrp.add(twAft);window.whParts.push(twAft);
   // Capstan (forward)
   var cap3=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,0.8,8),new THREE.MeshPhongMaterial({color:0x555555}));
-  cap3.position.set(0,6.8,-10);ownShipGrp.add(cap3);
+  cap3.position.set(0,6.8,-10);ownShipGrp.add(cap3);window.whParts.push(cap3);
   // Bollards (port & stbd)
   [[-4,-15],[-4,-10],[-4,-5],[-4,2],[-4,8],[-4,14],[4,-15],[4,-10],[4,-5],[4,2],[4,8],[4,14]].forEach(function(p){
     var bo2=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.28,0.6,6),bollMat);
-    bo2.position.set(p[0],6.7,p[1]);ownShipGrp.add(bo2);
+    bo2.position.set(p[0],6.7,p[1]);ownShipGrp.add(bo2);window.whParts.push(bo2);
   });
   // Tow hook
   var hook3=new THREE.Mesh(new THREE.TorusGeometry(0.6,0.12,6,8,Math.PI),yellowMat);
-  hook3.position.set(0,6.5,18.5);hook3.rotation.x=Math.PI/2;ownShipGrp.add(hook3);
+  hook3.position.set(0,6.5,18.5);hook3.rotation.x=Math.PI/2;ownShipGrp.add(hook3);window.whParts.push(hook3);
   // Bow stripe
   var bStr3=new THREE.Mesh(new THREE.BoxGeometry(3,0.4,0.12),whiteMat);
-  bStr3.position.set(0,5.2,-20);ownShipGrp.add(bStr3);
+  bStr3.position.set(0,5.2,-20);ownShipGrp.add(bStr3);window.whParts.push(bStr3);
 
   // === NAVIGATION LIGHTS ===
   // Port RED — 선수측 좌현 (z=-15 = 확실히 선수 가까이!)
   var nlR3=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,6),new THREE.MeshBasicMaterial({color:0xff0000}));
-  nlR3.position.set(-3.5,7.5,-15);ownShipGrp.add(nlR3);
+  nlR3.position.set(-3.5,7.5,-15);ownShipGrp.add(nlR3);window.whParts.push(nlR3);
   var plR=new THREE.PointLight(0xff0000,1.2,15);plR.position.set(-3.5,7.5,-15);ownShipGrp.add(plR);
   // Stbd GREEN — 선수측 우현
   var nlG3=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,6),new THREE.MeshBasicMaterial({color:0x00ff00}));
-  nlG3.position.set(3.5,7.5,-15);ownShipGrp.add(nlG3);
+  nlG3.position.set(3.5,7.5,-15);ownShipGrp.add(nlG3);window.whParts.push(nlG3);
   var plG=new THREE.PointLight(0x00ff00,1.2,15);plG.position.set(3.5,7.5,-15);ownShipGrp.add(plG);
   // Stern WHITE — 선미등
   var nlS3=new THREE.Mesh(new THREE.SphereGeometry(0.35,8,6),new THREE.MeshBasicMaterial({color:0xffffcc}));
-  nlS3.position.set(0,7,20.5);ownShipGrp.add(nlS3);
+  nlS3.position.set(0,7,20.5);ownShipGrp.add(nlS3);window.whParts.push(nlS3);
 
   // === BRIDGE WINGS ===
   [{s:-1},{s:1}].forEach(function(sd){
     var bwg=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.15,2.3),deckGrey);
-    bwg.position.set(sd.s*4.5,6.2,6);ownShipGrp.add(bwg);
+    bwg.position.set(sd.s*4.5,6.2,6);ownShipGrp.add(bwg);window.whParts.push(bwg);
     var bwr3=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.7,2.3),railMat);
-    bwr3.position.set(sd.s*5.3,6.6,6);ownShipGrp.add(bwr3);
+    bwr3.position.set(sd.s*5.3,6.6,6);ownShipGrp.add(bwr3);window.whParts.push(bwr3);
   });
 
   // === VENTS & EXHAUSTS ===
   [{x:2,z:-4},{x:-2,z:-4},{x:2.5,z:12},{x:-2.5,z:12}].forEach(function(v2){
     var vp3=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,1,6),mastMat);
-    vp3.position.set(v2.x,6.8,v2.z);ownShipGrp.add(vp3);
+    vp3.position.set(v2.x,6.8,v2.z);ownShipGrp.add(vp3);window.whParts.push(vp3);
     var vh3=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,4),mastMat);
     vh3.position.set(v2.x,7.4,v2.z);ownShipGrp.add(vh3);
   });
 
   // === ENGINE ROOM SKYLIGHT (rectangle on aft deck) ===
   var skyL=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.3,2.5),new THREE.MeshPhongMaterial({color:0x556655,transparent:true,opacity:0.7}));
-  skyL.position.set(0,6.4,12);ownShipGrp.add(skyL);
+  skyL.position.set(0,6.4,12);ownShipGrp.add(skyL);window.whParts.push(skyL);
 })();
 
 
@@ -619,14 +622,13 @@ function clearTrail(){
   trailGeo.setDrawRange(0,0);
 }
 
-function drawWinFrame(W,H){var svg=document.getElementById('winFrame');svg.innerHTML='';var ns='http://www.w3.org/2000/svg';
-function el(tag,a){var e=document.createElementNS(ns,tag);for(var k in a)e.setAttribute(k,a[k]);return e;}
-svg.appendChild(el('rect',{x:0,y:0,width:W,height:14,fill:'#2a3428',opacity:0.9}));svg.appendChild(el('line',{x1:0,y1:14,x2:W,y2:14,stroke:'rgba(80,110,70,0.5)','stroke-width':1}));}
+function drawWinFrame(W,H){}
 
 var isThirdPersonView = true;
 function toggleView() {
   isThirdPersonView = !isThirdPersonView;
   var btn = document.getElementById('viewBtn');
+  for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=true;
   if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 3인칭';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
   else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
 }
@@ -692,13 +694,15 @@ function updateBridgeView(t){
   // ocean stays at origin — ship moves over it
   var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd);
   
+  for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=true;
   if(isThirdPersonView) {
     camera.position.set(ship.x - fX*50, 70, ship.y - fZ*50);
     camera.lookAt(ship.x, 0, ship.y);
   } else {
-    // 1인칭 시점 (브릿지 위치로 카메라 조정)
-    camera.position.set(ship.x + fX*5, 14, ship.y + fZ*5);
-    camera.lookAt(ship.x + fX*20, 5, ship.y + fZ*20);
+    // 1인칭: 선교 숨김, 선수만 보임
+    for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=false;
+    camera.position.set(ship.x + fX*8, 12.5, ship.y + fZ*8);
+    camera.lookAt(ship.x + fX*40, 4, ship.y + fZ*40);
   }
   
   ownShipGrp.position.set(ship.x, 0, ship.y);

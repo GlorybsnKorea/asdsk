@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ASD 예인선 브릿지 시뮬레이터 - 3D Pro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -13,7 +13,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 #bridgeCanvas{width:100%;height:100%;display:block}
 #winFrame{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 #keyhint{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.65);border-radius:5px;padding:5px 9px;font-size:9px;line-height:1.7;color:rgba(180,200,180,0.55);pointer-events:none}
-#controlWrap{flex:4;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#6a8a62,#5a7a52);border-top:3px solid rgba(80,120,70,0.7);touch-action:pinch-zoom}
+#controlWrap{flex:4;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#6a8a62,#5a7a52);border-top:3px solid rgba(80,120,70,0.7);touch-action:none}
 #controlPanel{padding:4px 10px;display:flex;align-items:center;justify-content:center;gap:18px;transform-origin:center center}
 .qbtn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#e0f0d8;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit;font-weight:700}
 .qbtn:hover{background:rgba(255,255,255,0.2)}
@@ -24,8 +24,13 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 #dirBox{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.75);border:1px solid rgba(0,200,255,0.35);border-radius:4px;padding:4px 12px;font-size:11px;font-weight:700;color:#00d4ff;pointer-events:none;letter-spacing:0.5px}
 @media(max-width:900px){body{flex-direction:column} #topbar{font-size:10px;padding:3px 8px;gap:6px} #topbar b{font-size:10px} #keyhint{display:none} #dbg{display:none}}
 @media(max-height:500px){#bridgewrap{flex:5} #controlWrap{flex:5}}
-@media(max-width:500px){#topbar span{font-size:9px}}
+@media(max-width:500px){#topbar span{font-size:8px} #topbar b{font-size:9px} #topbar{padding:2px 5px;gap:4px}}
+@media(max-width:400px){#topbar{flex-wrap:wrap;justify-content:center;gap:3px} .qbtn{padding:2px 5px;font-size:8px}}
+@media(orientation:portrait){#bridgewrap{flex:5} #controlWrap{flex:5}}
+@media(orientation:portrait) and (max-width:600px){#bridgewrap{flex:4} #controlWrap{flex:6} #controlPanel{gap:6px;padding:2px 4px}}
+@media(max-height:400px){#bridgewrap{flex:4} #controlWrap{flex:6}}
 </style>
+<style>html,body{touch-action:none;-webkit-overflow-scrolling:auto;overscroll-behavior:none}</style>
 </head>
 <body>
 <div id="topbar">
@@ -87,13 +92,13 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <div class="sec-title">스티어링 — 콤비네이션 핸들</div>
     <div style="display:flex;align-items:flex-start;gap:4px">
       <div class="gc"><span class="gt" style="color:#ff6666">좌현</span><canvas id="portGauge" width="170" height="175"></canvas></div>
-      <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
+      <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:none;margin-top:18px"></canvas>
       <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
     <div class="sec-title">가버너</div>
-    <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
+    <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:none"></canvas>
     <div style="display:flex;gap:6px;margin-top:2px">
       <button class="qbtn" onclick="aS()">⬛ 전체정지</button>
       <button id="playBtn" style="background:rgba(0,0,0,0.25);border:2px solid rgba(0,255,100,0.5);color:#00ee88;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px" onclick="togglePlay()">▶ 실행</button>
@@ -101,7 +106,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
     <div class="sec-title">CPP 레버</div>
-    <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
+    <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:none"></canvas>
   </div>
 </div>
 </div>
@@ -654,7 +659,7 @@ function doCppY(cY,isPort){var r=cppCv.getBoundingClientRect();var v=27-(((cY-r.
 
 window.addEventListener('mousemove',function(e){if(!mouseDrag)return;if(mouseDrag==='wh')doStXY(e.clientX,e.clientY);else if(mouseDrag==='pt'||mouseDrag==='sb')doThY(e.clientY,mouseDrag);else if(mouseDrag==='gvP')doGovY(e.clientY,true);else if(mouseDrag==='gvS')doGovY(e.clientY,false);else if(mouseDrag==='cpP')doCppY(e.clientY,true);else if(mouseDrag==='cpS')doCppY(e.clientY,false);});
 window.addEventListener('mouseup',function(){mouseDrag=null;});
-window.addEventListener('touchmove',function(e){var ha=false;for(var k in touches)ha=true;if(!ha)return;e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
+window.addEventListener('touchmove',function(e){e.preventDefault();var ha=false;for(var k in touches)ha=true;if(!ha)return;for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
 window.addEventListener('touchend',function(e){for(var i=0;i<e.changedTouches.length;i++)delete touches[e.changedTouches[i].identifier];});
 
 function pI(){
@@ -826,11 +831,14 @@ function resizeBridge(){var w=bwEl.clientWidth,h=bwEl.clientHeight;renderer.setS
 
 function autoScale(){
   var cp=document.getElementById('controlPanel'),cw=document.getElementById('controlWrap');if(!cp||!cw)return;cp.style.transform='none';void cp.offsetWidth;
-  cp.style.transform='scale('+Math.min(cw.clientWidth/(cp.scrollWidth+24),cw.clientHeight/(cp.scrollHeight+12),3)+')';
+  var sx=cw.clientWidth/(cp.scrollWidth+16),sy=cw.clientHeight/(cp.scrollHeight+8);cp.style.transform='scale('+Math.min(sx,sy,3)+')';
 }
-window.addEventListener('resize',function(){resizeBridge();autoScale();});
-window.addEventListener('orientationchange',function(){setTimeout(function(){resizeBridge();autoScale();},300);});
+window.addEventListener('resize',function(){resizeBridge();autoScale();
+document.addEventListener('contextmenu',function(e){e.preventDefault();});});
+window.addEventListener('orientationchange',function(){setTimeout(function(){resizeBridge();autoScale();
+document.addEventListener('contextmenu',function(e){e.preventDefault();});},300);});
 resizeBridge();autoScale();
+document.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 var clock=new THREE.Clock();
 function mainLoop(){

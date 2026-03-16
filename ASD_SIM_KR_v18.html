@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 <meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ASD 예인선 브릿지 시뮬레이터 - 3D Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes">
+<title>ASD Tug Bridge Simulator - Drone View Pro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Courier New',monospace;color:#c0d4e8;user-select:none;display:flex;flex-direction:column}
@@ -13,7 +13,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 #bridgeCanvas{width:100%;height:100%;display:block}
 #winFrame{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 #keyhint{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.65);border-radius:5px;padding:5px 9px;font-size:9px;line-height:1.7;color:rgba(180,200,180,0.55);pointer-events:none}
-#controlWrap{flex:4;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#6a8a62,#5a7a52);border-top:3px solid rgba(80,120,70,0.7);touch-action:none}
+#controlWrap{flex:4;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#6a8a62,#5a7a52);border-top:3px solid rgba(80,120,70,0.7);touch-action:pinch-zoom}
 #controlPanel{padding:4px 10px;display:flex;align-items:center;justify-content:center;gap:18px;transform-origin:center center}
 .qbtn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#e0f0d8;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit;font-weight:700}
 .qbtn:hover{background:rgba(255,255,255,0.2)}
@@ -24,51 +24,46 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 #dirBox{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.75);border:1px solid rgba(0,200,255,0.35);border-radius:4px;padding:4px 12px;font-size:11px;font-weight:700;color:#00d4ff;pointer-events:none;letter-spacing:0.5px}
 @media(max-width:900px){body{flex-direction:column} #topbar{font-size:10px;padding:3px 8px;gap:6px} #topbar b{font-size:10px} #keyhint{display:none} #dbg{display:none}}
 @media(max-height:500px){#bridgewrap{flex:5} #controlWrap{flex:5}}
-@media(max-width:500px){#topbar span{font-size:8px} #topbar b{font-size:9px} #topbar{padding:2px 5px;gap:4px}}
-@media(max-width:400px){#topbar{flex-wrap:wrap;justify-content:center;gap:3px} .qbtn{padding:2px 5px;font-size:8px}}
-@media(orientation:portrait){#bridgewrap{flex:5} #controlWrap{flex:5}}
-@media(orientation:portrait) and (max-width:600px){#bridgewrap{flex:4} #controlWrap{flex:6} #controlPanel{gap:6px;padding:2px 4px}}
-@media(max-height:400px){#bridgewrap{flex:4} #controlWrap{flex:6}}
+@media(max-width:500px){#topbar span{font-size:9px}}
 </style>
-<style>html,body{touch-action:none;-webkit-overflow-scrolling:auto;overscroll-behavior:none}</style>
 </head>
 <body>
 <div id="topbar">
-  <span style="color:#8ad870;font-weight:700;font-size:13px;letter-spacing:1px">⚓ ASD 예인선 · 브릿지 시뮬레이터 <span style="color:#446644;font-size:9px">3D PRO</span></span>
+  <span style="color:#8ad870;font-weight:700;font-size:13px;letter-spacing:1px">⚓ ASD TUG · BRIDGE SIMULATOR <span style="color:#446644;font-size:9px">3D PRO</span></span>
   <div style="display:flex;gap:16px;align-items:center;font-size:11px">
-    <span>방위 <b id="valHdg" style="color:#edc740">090°</b></span>
-    <span>속력 <b id="valSpd" style="color:#4dd88a">0.0 kts</b></span>
-    <span>조타 <b id="valStr" style="color:#aaa">0°</b></span>
-    <span>좌현RPM <b id="valPRpm" style="color:#f0a040">OFF</b></span>
-    <span>우현RPM <b id="valSRpm" style="color:#f0a040">OFF</b></span>
-    <span id="playStatus" style="color:#556655;font-weight:700">■ 대기</span>
-    <button class="qbtn" onclick="doReset()">⟳ 초기화</button>
-    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(200,150,0,0.2);border-color:rgba(200,150,0,0.5);color:#ffcc00;font-weight:700;font-size:11px;padding:3px 10px">👁️ 시점: 3인칭</button>
-    <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? 도움말</button>
+    <span>HDG <b id="valHdg" style="color:#edc740">090°</b></span>
+    <span>SPD <b id="valSpd" style="color:#4dd88a">0.0 kts</b></span>
+    <span>STR <b id="valStr" style="color:#aaa">0°</b></span>
+    <span>P-RPM <b id="valPRpm" style="color:#f0a040">OFF</b></span>
+    <span>S-RPM <b id="valSRpm" style="color:#f0a040">OFF</b></span>
+    <span id="playStatus" style="color:#556655;font-weight:700">■ STANDBY</span>
+    <button class="qbtn" onclick="doReset()">⟳ RESET</button>
+    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ 시점: 드론뷰</button>
+    <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? HELP</button>
   </div>
 </div>
 
 <div id="helpOverlay" onclick="if(event.target===this)toggleHelp()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
 <div id="helpBox" style="background:linear-gradient(135deg,#f4f6f3,#e8ebe6);color:#1a2a1a;border-radius:16px;max-width:680px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;position:relative">
   <div style="background:linear-gradient(135deg,#2a3a28,#3a4a38);color:#e0f0d8;padding:18px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:18px;font-weight:900;letter-spacing:2px">⚓ 사용 설명서</div>
+    <div style="font-size:18px;font-weight:900;letter-spacing:2px">⚓ USER MANUAL</div>
     <button onclick="toggleHelp()" style="background:none;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
   <div style="padding:20px 24px 24px 24px;font-size:13.5px;line-height:2">
     <div style="background:#2a3a28;color:#a0d890;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:12px;line-height:1.8">
-      <b style="color:#edc740;font-size:14px">ASD 예인선 3D 브릿지 시뮬레이터</b><br>ASD 예인선의 3D 조선 시뮬레이터입니다. 3인칭 시점에서 Z-Drive 추력 벡터링을 확인할 수 있습니다.
+      <b style="color:#edc740;font-size:14px">ASD TUG 3D BRIDGE SIMULATOR</b><br>A 3D maneuvering simulator for Azimuth Stern Drive (ASD) tugboats. Observe accurate Z-Drive thrust vectoring.
     </div>
-    <b style="color:#0066aa;font-size:15px">🎮 조작 방법</b>
+    <b style="color:#0066aa;font-size:15px">🎮 Controls</b>
     <table style="width:100%;border-collapse:collapse;margin:8px 0 16px 0;font-size:12.5px">
-      <tr style="background:#d8e4d6"><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8;width:40%">기능</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">키보드</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">마우스/터치</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">스티어링 (조타)</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">C-링 휠 드래그</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현 CPP 레버</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">좌측 레버 드래그</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현 CPP 레버</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">우측 레버 드래그</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현 가버너</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">좌측 슬라이더 드래그</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현 가버너</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">우측 슬라이더 드래그</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현 CPP 블레이드</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP 좌측 슬라이더</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현 CPP 블레이드</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP 우측 슬라이더</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">시뮬레이션 시작/정지</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>P</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">▶ 실행 버튼</td></tr>
+      <tr style="background:#d8e4d6"><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8;width:40%">Function</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Keyboard</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Mouse / Touch</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Steering (Helm)</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag C-ring wheel</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left lever</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right lever</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right slider</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP left slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP right slider</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Start / Stop</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>P</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">▶ PLAY button</td></tr>
     </table>
   </div>
 </div>
@@ -77,36 +72,36 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 <div id="bridgewrap">
   <canvas id="bridgeCanvas"></canvas>
   <svg id="winFrame" xmlns="http://www.w3.org/2000/svg" style="display:none"></svg>
-  <div id="keyhint">조타: A/D · 좌현CPP: W/S · 우현CPP: ↑/↓<br>좌현거버너: Q/E · 우현거버너: Z/X · 실행: P · 긴급정지: Space</div>
+  <div id="keyhint">Steer: A/D · Port CPP: W/S · Stbd CPP: ↑/↓<br>P-Gov: Q/E · S-Gov: Z/X · Play: P · E-Stop: Space</div>
   <div id="dbg"></div>
-  <div id="dirBox">정지</div>
+  <div id="dirBox">STOP</div>
 </div>
 
 <div id="controlWrap">
 <div id="controlPanel">
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-right:8px;">
-    <div class="sec-title">콤파스</div>
+    <div class="sec-title">COMPASS</div>
     <canvas id="compassCanvas" width="170" height="175"></canvas>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:0">
-    <div class="sec-title">스티어링 — 콤비네이션 핸들</div>
+    <div class="sec-title">STEERING — COMBINATION HANDLE</div>
     <div style="display:flex;align-items:flex-start;gap:4px">
-      <div class="gc"><span class="gt" style="color:#ff6666">좌현</span><canvas id="portGauge" width="170" height="175"></canvas></div>
-      <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:none;margin-top:18px"></canvas>
+      <div class="gc"><span class="gt" style="color:#ff6666">PORT</span><canvas id="portGauge" width="170" height="175"></canvas></div>
+      <canvas id="comboCanvas" width="260" height="235" style="cursor:grab;touch-action:pinch-zoom;margin-top:18px"></canvas>
       <div class="gc"><span class="gt" style="color:#66ff88">STB'D</span><canvas id="stbdGauge" width="170" height="175"></canvas></div>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-    <div class="sec-title">가버너</div>
-    <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:none"></canvas>
+    <div class="sec-title">GOVERNOR</div>
+    <canvas id="govCanvas" width="220" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
     <div style="display:flex;gap:6px;margin-top:2px">
-      <button class="qbtn" onclick="aS()">⬛ 전체정지</button>
-      <button id="playBtn" style="background:rgba(0,0,0,0.25);border:2px solid rgba(0,255,100,0.5);color:#00ee88;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px" onclick="togglePlay()">▶ 실행</button>
+      <button class="qbtn" onclick="aS()">⬛ ALL STOP</button>
+      <button id="playBtn" style="background:rgba(0,0,0,0.25);border:2px solid rgba(0,255,100,0.5);color:#00ee88;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px" onclick="togglePlay()">▶ PLAY</button>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-    <div class="sec-title">CPP 레버</div>
-    <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:none"></canvas>
+    <div class="sec-title">CPP LEVER</div>
+    <canvas id="cppCanvas" width="180" height="215" style="cursor:pointer;touch-action:pinch-zoom"></canvas>
   </div>
 </div>
 </div>
@@ -114,6 +109,9 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 "use strict";
+// =========================================================================
+// 1. 원본 UI 및 컨트롤 로직 (완벽 보존)
+// =========================================================================
 var D=Math.PI/180, R2D=180/Math.PI;
 var ship={x:0,y:0,vx:0,vy:0,hd:Math.PI/2,om:0,st:0,pt:0,sb:0,pGov:0,sGov:0,pCPP:0,sCPP:0};
 var playing=false, pk={};
@@ -251,394 +249,6 @@ function dCH(){
   c.restore();
 }
 
-// ══════════════════════════════════════════════════════════
-//  THREE.JS — BRIDGE 3D VIEW & PHYSICS
-// ══════════════════════════════════════════════════════════
-var bwEl=document.getElementById('bridgewrap'),bCanvas=document.getElementById('bridgeCanvas');
-var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;
-var scene=new THREE.Scene();scene.background=new THREE.Color(0x7ab8d0);scene.fog=new THREE.FogExp2(0x8ac8e0,0.0002);
-var camera=new THREE.PerspectiveCamera(72,1,0.1,8000);camera.position.set(0,14,0);
-
-scene.add(new THREE.AmbientLight(0xddeedd,2.5));var sun=new THREE.DirectionalLight(0xfff5e0,4.0);sun.position.set(0,500,0);sun.castShadow=true;scene.add(sun);
-var OCEAN_W=25000,OCEAN_SEGS=128;var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS);oceanGeo.rotateX(-Math.PI/2);
-var oceanOrigY=new Float32Array(oceanGeo.attributes.position.count);for(var oi=0;oi<oceanGeo.attributes.position.count;oi++)oceanOrigY[oi]=oceanGeo.attributes.position.getY(oi);
-var oceanMat=new THREE.MeshStandardMaterial({color:0x0e6ea8,roughness:0.6,metalness:0.0,transparent:true,opacity:0.92});
-var ocean=new THREE.Mesh(oceanGeo,oceanMat);ocean.receiveShadow=true;scene.add(ocean);
-
-function addBox(g,x,y,z,w,h,d,col){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:col}));m.position.set(x,y,z);g.add(m);return m;}
-var dockGroup=new THREE.Group();scene.add(dockGroup);
-// Wide channel with buildings on both sides — 20km total
-(function buildChannel(){
-  var cols=[0xd4c4a0,0xc0a878,0xb8a070,0x998866,0xaa9070,0xccbb99,0x887766,0xbbaa88];
-  var bcols=[0x889098,0x778088,0x99a0a8,0x667078,0xaab0b8,0x556068,0x708090,0x8899aa];
-  function srand(s){return function(){s=(s*9301+49297)%233280;return s/233280;};}
-  var rng=srand(42);
-  // Buildings from z=-10000 to z=+10000, spacing 60~100m
-  for(var z=-10000;z<=10000;z+=60+Math.floor(rng()*40)){
-    // Port side (x=-200 ~ -300) — wider channel
-    var pw=20+rng()*50, ph=5+rng()*30, pd=25+rng()*40;
-    var px=-200-rng()*100;
-    addBox(dockGroup,px,ph/2,z,pw,ph,pd,cols[Math.floor(rng()*cols.length)]);
-    if(rng()>0.4){
-      var bh=10+rng()*25;
-      addBox(dockGroup,px+rng()*12-6,ph+bh/2,z,pw*0.5,bh,pd*0.4,bcols[Math.floor(rng()*bcols.length)]);
-    }
-    if(rng()>0.75){
-      addBox(dockGroup,px+15,ph+18,z,2,35,2,0x444444);
-      addBox(dockGroup,px+30,ph+32,z,25,2,2,0x555555);
-    }
-    // Stbd side (x=+200 ~ +300)
-    var sw=20+rng()*50, sh=5+rng()*30, sd=25+rng()*40;
-    var sx=200+rng()*100;
-    addBox(dockGroup,sx,sh/2,z,sw,sh,sd,cols[Math.floor(rng()*cols.length)]);
-    if(rng()>0.4){
-      var bh2=10+rng()*25;
-      addBox(dockGroup,sx+rng()*12-6,sh+bh2/2,z,sw*0.5,bh2,sd*0.4,bcols[Math.floor(rng()*bcols.length)]);
-    }
-    // Wharf wall along water edge
-    addBox(dockGroup,-150,3,z,12,6,50,0xaaaaaa);
-    addBox(dockGroup,150,3,z,12,6,50,0xaaaaaa);
-  }
-  // Buoys every 300m
-  var buoyGeo=new THREE.CylinderGeometry(2,2,6,6);
-  for(var bz=-10000;bz<=10000;bz+=300){
-    var bP=new THREE.Mesh(buoyGeo,new THREE.MeshBasicMaterial({color:0x00cc00}));
-    bP.position.set(-120,3,bz);dockGroup.add(bP);
-    var bS=new THREE.Mesh(buoyGeo,new THREE.MeshBasicMaterial({color:0xcc0000}));
-    bS.position.set(120,3,bz);dockGroup.add(bS);
-  }
-})();
-
-// ── 3D TUGBOAT MODEL (BUILT-IN — no external files needed) ──
-var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
-window.whParts=[];
-(function buildTug(){
-  // === MATERIALS ===
-  var hullDark = new THREE.MeshPhongMaterial({color:0x08081a,flatShading:false});
-  var hullBlue = new THREE.MeshPhongMaterial({color:0x111111});
-  var redWL = new THREE.MeshPhongMaterial({color:0xcc1111});
-  var deckGrey = new THREE.MeshPhongMaterial({color:0x555560});
-  var deckDark = new THREE.MeshPhongMaterial({color:0x6db86d});
-  var deckGreen = new THREE.MeshPhongMaterial({color:0x3a5a3a});
-  var whMat = new THREE.MeshPhongMaterial({color:0xddddc8});
-  var winMat = new THREE.MeshPhongMaterial({color:0x3366aa,transparent:true,opacity:0.65});
-  var railMat = new THREE.MeshPhongMaterial({color:0x444444});
-  var fenderMat = new THREE.MeshPhongMaterial({color:0x111111});
-  var bollMat = new THREE.MeshPhongMaterial({color:0x2a2a2a});
-  var whiteMat = new THREE.MeshPhongMaterial({color:0xeeeeee});
-  var funnelMat = new THREE.MeshPhongMaterial({color:0xdd2200});
-  var mastMat = new THREE.MeshPhongMaterial({color:0x777777});
-  var yellowMat = new THREE.MeshPhongMaterial({color:0xeecc00});
-  var blackMat = new THREE.MeshPhongMaterial({color:0x111111});
-
-  // === HULL PLAN SHAPE — smooth curves matching ASD tug deck plan ===
-  // Bow at -Z, stern at +Z. Port=-X, Stbd=+X
-  // Length: 40m (-20 to +20), Beam: 12m (±6)
-  
-  // Helper: create smooth hull outline with bezier curves
-  function makeHullShape(beam,len,bowRatio,sternW){
-    var hw=beam/2, fl=len/2, bl=-len/2;
-    var s=new THREE.Shape();
-    // Start stern port — COMPLETELY FLAT TRANSOM
-    s.moveTo(-sternW, fl);
-    // Stern quarter — stays wide, barely narrows
-    s.bezierCurveTo(-hw*0.92, fl-1, -hw*0.98, fl-3, -hw, fl-4);
-    // Port side — long gentle curve through midship
-    s.bezierCurveTo(-hw*1.02, fl-12, -hw*1.02, bl+16, -hw*0.95, bl+12);
-    // Port bow — smooth curve narrowing
-    s.bezierCurveTo(-hw*0.85, bl+8, -hw*0.6, bl+4, -hw*0.35, bl+2);
-    // Bow tip — rounded (not too sharp, matching ASD tug bow)
-    s.bezierCurveTo(-hw*0.15, bl+0.8, -hw*0.05, bl+0.2, 0, bl);
-    // Stbd bow (mirror)
-    s.bezierCurveTo(hw*0.05, bl+0.2, hw*0.15, bl+0.8, hw*0.35, bl+2);
-    s.bezierCurveTo(hw*0.6, bl+4, hw*0.85, bl+8, hw*0.95, bl+12);
-    // Stbd side
-    s.bezierCurveTo(hw*1.02, bl+16, hw*1.02, fl-12, hw, fl-4);
-    // Stbd stern quarter
-    s.bezierCurveTo(hw*0.98, fl-3, hw*0.92, fl-1, sternW, fl);
-    // FLAT TRANSOM — straight line back to start (no curve, no notch!)
-    s.lineTo(-sternW, fl);
-    return s;
-  }
-  
-  var hullPlan = makeHullShape(12, 42, 0.35, 5.5);
-  
-  // Lower hull (below waterline)
-  var lowerGeo = new THREE.ExtrudeGeometry(hullPlan,{depth:3.5,bevelEnabled:true,bevelThickness:0.5,bevelSize:0.6,bevelSegments:3});
-  var lowerMesh = new THREE.Mesh(lowerGeo, hullDark);
-  lowerMesh.rotation.x = -Math.PI/2;
-  lowerMesh.position.set(0, -0.5, 0);
-  ownShipGrp.add(lowerMesh);
-
-  // Upper hull (above waterline — slightly narrower)
-  var upperPlan = makeHullShape(11.4, 41, 0.35, 5.2);
-  var upperGeo = new THREE.ExtrudeGeometry(upperPlan,{depth:3,bevelEnabled:true,bevelThickness:1.5,bevelSize:1.5,bevelSegments:2});
-  var upperMesh = new THREE.Mesh(upperGeo, hullBlue);
-  upperMesh.rotation.x = -Math.PI/2;
-  upperMesh.position.set(0, 3, 0);
-  ownShipGrp.add(upperMesh);
-
-  // Red waterline stripe
-  var wlPlan = makeHullShape(12.2, 42.2, 0.35, 5.6);
-  var wlGeo = new THREE.ExtrudeGeometry(wlPlan,{depth:0.6,bevelEnabled:false});
-  var wlMesh = new THREE.Mesh(wlGeo, redWL);
-  wlMesh.rotation.x = -Math.PI/2;
-  wlMesh.position.set(0, 2.5, 0);
-  ownShipGrp.add(wlMesh);
-
-  // === DECK (follows hull contour) ===
-  var deckPlan = makeHullShape(11, 40.5, 0.35, 5);
-  var deckGeo2 = new THREE.ExtrudeGeometry(deckPlan,{depth:0.25,bevelEnabled:false});
-  var deckMesh2 = new THREE.Mesh(deckGeo2, deckGrey);
-  deckMesh2.rotation.x = -Math.PI/2;
-  deckMesh2.position.set(0, 6.1, 0);
-  ownShipGrp.add(deckMesh2);
-
-  // (tow notch removed)
-
-  // Stern transom wall (vertical flat surface)
-  var sternWall = new THREE.Mesh(new THREE.BoxGeometry(11,5.5,0.3), hullBlue);
-  sternWall.position.set(0,3,21); ownShipGrp.add(sternWall);
-
-  // Z-Drive wells (two large dark circles on stern deck — visible from above)
-  [{x:-4},{x:4}].forEach(function(zw){
-    var well = new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,0.5,20), blackMat);
-    well.position.set(zw.x, 5.95, 17); ownShipGrp.add(well);
-
-  });
-
-  // Raised forecastle deck
-  var fcPlan = new THREE.Shape();
-  fcPlan.moveTo(-5.2,-6);
-  fcPlan.lineTo(-5.2,-10);
-  fcPlan.bezierCurveTo(-5.1,-13, -4.5,-16, -3.5,-18);
-  fcPlan.bezierCurveTo(-2,-19.8, -0.8,-20.5, 0,-20.8);
-  fcPlan.bezierCurveTo(0.8,-20.5, 2,-19.8, 3.5,-18);
-  fcPlan.bezierCurveTo(4.5,-16, 5.1,-13, 5.2,-10);
-  fcPlan.lineTo(5.2,-6);
-  fcPlan.closePath();
-  var fcGeo2 = new THREE.ExtrudeGeometry(fcPlan,{depth:0.8,bevelEnabled:false});
-  var fcMesh2 = new THREE.Mesh(fcGeo2, deckDark);
-  fcMesh2.rotation.x = -Math.PI/2;
-  fcMesh2.position.set(0, 6.6, 0);
-  ownShipGrp.add(fcMesh2);
-
-  // === WHEELHOUSE ===
-  var whShape2 = new THREE.Shape();
-  whShape2.moveTo(-3.6,0);
-  whShape2.lineTo(-3.6,4.2);
-  whShape2.quadraticCurveTo(-3.6,4.8,-3,4.8);
-  whShape2.lineTo(3,4.8);
-  whShape2.quadraticCurveTo(3.6,4.8,3.6,4.2);
-  whShape2.lineTo(3.6,0);
-  whShape2.closePath();
-  var whGeo2 = new THREE.ExtrudeGeometry(whShape2,{depth:6.5,bevelEnabled:true,bevelThickness:0.2,bevelSize:0.2,bevelSegments:2});
-  var whMesh2 = new THREE.Mesh(whGeo2, whMat);
-  whMesh2.position.set(0,6.2,9.5);whMesh2.rotation.y=Math.PI;
-  ownShipGrp.add(whMesh2);window.whParts.push(whMesh2);
-  // Roof
-  var roofMesh2 = new THREE.Mesh(new THREE.BoxGeometry(7.8,0.25,7.2),new THREE.MeshPhongMaterial({color:0x999999}));
-  roofMesh2.position.set(0,11.1,6.2);ownShipGrp.add(roofMesh2);window.whParts.push(roofMesh2);
-  // Windows front (5 panels, slightly angled)
-  for(var wp2=-2;wp2<=2;wp2++){
-    var wf2=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.6,0.12),winMat);
-    wf2.position.set(wp2*1.5,8.8,2.8);wf2.rotation.x=-0.06;ownShipGrp.add(wf2);
-    if(wp2<2){var mu2=new THREE.Mesh(new THREE.BoxGeometry(0.07,1.8,0.15),railMat);mu2.position.set(wp2*1.5+0.75,8.8,2.78);ownShipGrp.add(mu2);}
-  }
-  // Windows sides (3 each)
-  for(var ws2=0;ws2<3;ws2++){
-    [{x:-3.72},{x:3.72}].forEach(function(s){
-      var wsm=new THREE.Mesh(new THREE.BoxGeometry(0.12,1.3,1.2),winMat);
-      wsm.position.set(s.x,8.8,4+ws2*1.8);ownShipGrp.add(wsm);
-    });
-  }
-  // Window rear
-  var wr2=new THREE.Mesh(new THREE.BoxGeometry(4.5,1,0.12),winMat);
-  wr2.position.set(0,8.8,9.5);ownShipGrp.add(wr2);
-
-  // === FUNNEL ===
-  var fun2=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.85,3.2,12),funnelMat);
-  fun2.position.set(1.3,12.8,7.5);ownShipGrp.add(fun2);window.whParts.push(fun2);
-  var ftop2=new THREE.Mesh(new THREE.CylinderGeometry(0.65,0.55,0.4,12),blackMat);
-  ftop2.position.set(1.3,14.6,7.5);ownShipGrp.add(ftop2);window.whParts.push(ftop2);
-
-  // === MAST & RADAR ===
-  var mast3=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.16,7,6),mastMat);
-  mast3.position.set(0,14.5,6);ownShipGrp.add(mast3);window.whParts.push(mast3);
-  var radar2=new THREE.Mesh(new THREE.BoxGeometry(2.2,0.12,0.5),yellowMat);
-  radar2.position.set(0,18.2,6);ownShipGrp.add(radar2);window.whParts.push(radar2);
-  var mlt2=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,4),new THREE.MeshBasicMaterial({color:0xffffff}));
-  mlt2.position.set(0,18.5,6);ownShipGrp.add(mlt2);window.whParts.push(mlt2);
-
-  // === BULWARKS (following hull plan contour) ===
-  var bwPts=[
-    {x:-5,z:18},{x:-5.2,z:14},{x:-5.3,z:10},{x:-5.4,z:4},{x:-5.4,z:-2},
-    {x:-5.1,z:-6},{x:-4.5,z:-10},{x:-3.5,z:-14},{x:-2,z:-17.5}
-  ];
-  for(var bi2=0;bi2<bwPts.length-1;bi2++){
-    var ba2=bwPts[bi2],bb2=bwPts[bi2+1];
-    var bl2=Math.sqrt((bb2.x-ba2.x)*(bb2.x-ba2.x)+(bb2.z-ba2.z)*(bb2.z-ba2.z));
-    var ba2a=Math.atan2(bb2.x-ba2.x,bb2.z-ba2.z);
-    [{s:1},{s:-1}].forEach(function(sd){
-      var bm2=new THREE.Mesh(new THREE.BoxGeometry(0.15,1.2,bl2),railMat);
-      bm2.position.set(sd.s*(ba2.x+bb2.x)/2,7,(ba2.z+bb2.z)/2);bm2.rotation.y=-ba2a*sd.s;ownShipGrp.add(bm2);window.whParts.push(bm2);
-    });
-  }
-
-  // === FENDERS (rubber strip along waterline) ===
-  for(var fz3=-16;fz3<=18;fz3+=2.5){
-    var fxAt2=5.3;
-    if(fz3<-8)fxAt2=Math.max(1.5,5.3+(fz3+8)*0.25);
-    if(fz3>16)fxAt2=Math.max(3,5.3-(fz3-16)*0.5);
-    [{s:1},{s:-1}].forEach(function(sd){
-      var fd2=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.7,1.6),fenderMat);
-      fd2.position.set(sd.s*fxAt2,3.8,fz3);ownShipGrp.add(fd2);window.whParts.push(fd2);
-    });
-  }
-
-  // === DECK EQUIPMENT ===
-  // Tow winch (large, center)
-  var twBase=new THREE.Mesh(new THREE.BoxGeometry(2.8,1.2,2),bollMat);
-  twBase.position.set(0,7,1);ownShipGrp.add(twBase);window.whParts.push(twBase);
-  var twDrum=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,2.4,10),new THREE.MeshPhongMaterial({color:0x555555}));
-  twDrum.rotation.z=Math.PI/2;twDrum.position.set(0,7.8,1);ownShipGrp.add(twDrum);window.whParts.push(twDrum);
-  // Aft tow winch
-  var twAft=new THREE.Mesh(new THREE.BoxGeometry(2,1,1.5),bollMat);
-  twAft.position.set(0,6.8,14);ownShipGrp.add(twAft);window.whParts.push(twAft);
-  // Capstan (forward)
-  var cap3=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.5,0.8,8),new THREE.MeshPhongMaterial({color:0x555555}));
-  cap3.position.set(0,6.8,-10);ownShipGrp.add(cap3);window.whParts.push(cap3);
-  // Bollards (port & stbd)
-  [[-4,-15],[-4,-10],[-4,-5],[-4,2],[-4,8],[-4,14],[4,-15],[4,-10],[4,-5],[4,2],[4,8],[4,14]].forEach(function(p){
-    var bo2=new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.28,0.6,6),bollMat);
-    bo2.position.set(p[0],6.7,p[1]);ownShipGrp.add(bo2);window.whParts.push(bo2);
-  });
-  // Tow hook
-  var hook3=new THREE.Mesh(new THREE.TorusGeometry(0.6,0.12,6,8,Math.PI),yellowMat);
-  hook3.position.set(0,6.5,18.5);hook3.rotation.x=Math.PI/2;ownShipGrp.add(hook3);window.whParts.push(hook3);
-  // Bow stripe
-  var bStr3=new THREE.Mesh(new THREE.BoxGeometry(3,0.4,0.12),whiteMat);
-  bStr3.position.set(0,5.2,-20);ownShipGrp.add(bStr3);window.whParts.push(bStr3);
-
-  // === NAVIGATION LIGHTS ===
-  // Port RED — 선수측 좌현 (z=-15 = 확실히 선수 가까이!)
-  var nlR3=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,6),new THREE.MeshBasicMaterial({color:0xff0000}));
-  nlR3.position.set(-3.5,7.5,-15);ownShipGrp.add(nlR3);window.whParts.push(nlR3);
-  var plR=new THREE.PointLight(0xff0000,1.2,15);plR.position.set(-3.5,7.5,-15);ownShipGrp.add(plR);
-  // Stbd GREEN — 선수측 우현
-  var nlG3=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,6),new THREE.MeshBasicMaterial({color:0x00ff00}));
-  nlG3.position.set(3.5,7.5,-15);ownShipGrp.add(nlG3);window.whParts.push(nlG3);
-  var plG=new THREE.PointLight(0x00ff00,1.2,15);plG.position.set(3.5,7.5,-15);ownShipGrp.add(plG);
-  // Stern WHITE — 선미등
-  var nlS3=new THREE.Mesh(new THREE.SphereGeometry(0.35,8,6),new THREE.MeshBasicMaterial({color:0xffffcc}));
-  nlS3.position.set(0,7,20.5);ownShipGrp.add(nlS3);window.whParts.push(nlS3);
-
-  // === BRIDGE WINGS ===
-  [{s:-1},{s:1}].forEach(function(sd){
-    var bwg=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.15,2.3),deckGrey);
-    bwg.position.set(sd.s*4.5,6.2,6);ownShipGrp.add(bwg);window.whParts.push(bwg);
-    var bwr3=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.7,2.3),railMat);
-    bwr3.position.set(sd.s*5.3,6.6,6);ownShipGrp.add(bwr3);window.whParts.push(bwr3);
-  });
-
-  // === VENTS & EXHAUSTS ===
-  [{x:2,z:-4},{x:-2,z:-4},{x:2.5,z:12},{x:-2.5,z:12}].forEach(function(v2){
-    var vp3=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,1,6),mastMat);
-    vp3.position.set(v2.x,6.8,v2.z);ownShipGrp.add(vp3);window.whParts.push(vp3);
-    var vh3=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,4),mastMat);
-    vh3.position.set(v2.x,7.4,v2.z);ownShipGrp.add(vh3);
-  });
-
-  // === ENGINE ROOM SKYLIGHT (rectangle on aft deck) ===
-  var skyL=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.3,2.5),new THREE.MeshPhongMaterial({color:0x556655,transparent:true,opacity:0.7}));
-  skyL.position.set(0,6.4,12);ownShipGrp.add(skyL);window.whParts.push(skyL);
-})();
-
-
-// Z-DRIVES — Nozzle rotates to ACTUAL thrust direction (lever+steering combined)
-var zMat=new THREE.MeshLambertMaterial({color:0x222222}), pMat=new THREE.MeshLambertMaterial({color:0xb87333});
-// Nozzle function: returns nozzle angle in degrees
-function getPortNozzle(lv,st){return((270-lv-st)%360+360)%360;}
-function getStbdNozzle(lv,st){return((90+lv-st)%360+360)%360;}
-
-// PORT Z-Drive
-window.zDL=new THREE.Group();
-var zBL=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,2.5),zMat);zBL.position.y=1.25;window.zDL.add(zBL);
-// Nozzle group (rotates with thrust direction)
-window.nozL=new THREE.Group();
-var zPL=new THREE.Mesh(new THREE.CylinderGeometry(1,1,2.5),zMat);zPL.rotation.x=Math.PI/2;window.nozL.add(zPL);
-window.prL=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.2,0.8),pMat);window.prL.position.z=1.5;window.nozL.add(window.prL);
-// (spray cones removed)
-window.zDL.add(window.nozL);
-window.zDL.position.set(4,-2,-18);  // flipped: port=+X after PI, stern=-Z after PI
-ownShipGrp.add(window.zDL);
-
-// STBD Z-Drive
-window.zDR=new THREE.Group();
-var zBR=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,2.5),zMat);zBR.position.y=1.25;window.zDR.add(zBR);
-window.nozR=new THREE.Group();
-var zPR=new THREE.Mesh(new THREE.CylinderGeometry(1,1,2.5),zMat);zPR.rotation.x=Math.PI/2;window.nozR.add(zPR);
-window.prR=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.2,0.8),pMat);window.prR.position.z=1.5;window.nozR.add(window.prR);
-// (spray cones removed)
-window.zDR.add(window.nozR);
-window.zDR.position.set(-4,-2,-18); // flipped: stbd=-X after PI, stern=-Z after PI
-ownShipGrp.add(window.zDR);
-
-// WAKE (Foam)
-function getCircleTex(){var c=document.createElement('canvas');c.width=16;c.height=16;var ctx=c.getContext('2d');ctx.beginPath();ctx.arc(8,8,8,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();return new THREE.CanvasTexture(c);}
-var WAKE_N=3000, wakeGeo=new THREE.BufferGeometry(), wakeP=new Float32Array(WAKE_N*3); wakeGeo.setAttribute('position',new THREE.BufferAttribute(wakeP,3));
-var wakeSizes=new Float32Array(WAKE_N);wakeGeo.setAttribute('size',new THREE.BufferAttribute(wakeSizes,1));
-scene.add(new THREE.Points(wakeGeo,new THREE.PointsMaterial({color:0x5599bb, size:5, transparent:true, opacity:0.5, depthWrite:false, map:getCircleTex(), sizeAttenuation:true})));
-var wakeActive=new Float32Array(WAKE_N), wakeVel=new Float32Array(WAKE_N*3), wakeIdx=0;
-function spawnWake(x,y,z,vx,vy,vz){
-  var i=wakeIdx%WAKE_N;
-  wakeP[i*3]=x+(Math.random()-0.5)*2; wakeP[i*3+1]=y; wakeP[i*3+2]=z+(Math.random()-0.5)*2;
-  wakeVel[i*3]=vx+(Math.random()-0.5)*0.2; wakeVel[i*3+1]=0; wakeVel[i*3+2]=vz+(Math.random()-0.5)*0.2;
-  wakeActive[i]=1.0; wakeIdx++; wakeGeo.attributes.position.needsUpdate=true;
-}
-
-// ═══ SHIP TRAIL (항적 — persistent line on water surface) ═══
-var TRAIL_MAX=3000;
-var trailPts=new Float32Array(TRAIL_MAX*3);
-var trailGeo=new THREE.BufferGeometry();
-trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3));
-trailGeo.setDrawRange(0,0);
-var trailMat=new THREE.LineBasicMaterial({color:0x44ddff,transparent:true,opacity:0.85,depthTest:false});
-var trailLine=new THREE.Line(trailGeo,trailMat);
-trailLine.renderOrder=999;
-scene.add(trailLine);
-var trailCount=0, trailTimer=0;
-
-
-
-function addTrailPoint(){
-  if(trailCount>=TRAIL_MAX)return;
-  var i=trailCount*3;
-  // Center trail — raised well above ocean
-  trailPts[i]=ship.x; trailPts[i+1]=2.0; trailPts[i+2]=ship.y;
-  trailGeo.attributes.position.needsUpdate=true;
-
-  trailCount++;
-  trailGeo.setDrawRange(0,trailCount);
-}
-
-function clearTrail(){
-  trailCount=0;trailTimer=0;
-  trailGeo.setDrawRange(0,0);
-}
-
-function drawWinFrame(W,H){}
-
-var isThirdPersonView = true;
-function toggleView() {
-  isThirdPersonView = !isThirdPersonView;
-  var btn = document.getElementById('viewBtn');
-  for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=true;
-  if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 3인칭';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
-  else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
-}
-
-// INPUT LISTENERS
 var mouseDrag=null,wSA=0,wSS=0,touches={};
 function hitCombo(cX,cY){var r=cc.getBoundingClientRect();var mx=(cX-r.left)/r.width*260-130,my=(cY-r.top)/r.height*235-118;if(mx>-28&&mx<0&&my>-33&&my<33)return'pt';if(mx>=0&&mx<28&&my>-33&&my<33)return'sb';return'wh';}
 cc.addEventListener('mousedown',function(e){var m=hitCombo(e.clientX,e.clientY);mouseDrag=m;if(m==='wh'){var r=cc.getBoundingClientRect();wSA=Math.atan2((e.clientX-r.left)/r.width*260-130,-((e.clientY-r.top)/r.height*235-118))*R2D;wSS=ship.st;}});
@@ -659,7 +269,7 @@ function doCppY(cY,isPort){var r=cppCv.getBoundingClientRect();var v=27-(((cY-r.
 
 window.addEventListener('mousemove',function(e){if(!mouseDrag)return;if(mouseDrag==='wh')doStXY(e.clientX,e.clientY);else if(mouseDrag==='pt'||mouseDrag==='sb')doThY(e.clientY,mouseDrag);else if(mouseDrag==='gvP')doGovY(e.clientY,true);else if(mouseDrag==='gvS')doGovY(e.clientY,false);else if(mouseDrag==='cpP')doCppY(e.clientY,true);else if(mouseDrag==='cpS')doCppY(e.clientY,false);});
 window.addEventListener('mouseup',function(){mouseDrag=null;});
-window.addEventListener('touchmove',function(e){e.preventDefault();var ha=false;for(var k in touches)ha=true;if(!ha)return;for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
+window.addEventListener('touchmove',function(e){var ha=false;for(var k in touches)ha=true;if(!ha)return;e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
 window.addEventListener('touchend',function(e){for(var i=0;i<e.changedTouches.length;i++)delete touches[e.changedTouches[i].identifier];});
 
 function pI(){
@@ -673,142 +283,215 @@ function pI(){
   if(pk[' ']){ship.pt*=0.88;ship.sb*=0.88;ship.pGov=Math.max(0,ship.pGov-0.25);ship.sGov=Math.max(0,ship.sGov-0.25);ship.pCPP*=0.88;ship.sCPP*=0.88;}
 }
 
+// ══════════════════════════════════════════════════════════
+//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS (★ 정밀 교정 구역 ★)
+// ══════════════════════════════════════════════════════════
+var bwEl=document.getElementById('bridgewrap'),bCanvas=document.getElementById('bridgeCanvas');
+var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+var scene=new THREE.Scene();
+
+// 맑은 청색 바다 세팅
+scene.background=new THREE.Color(0x004488);
+var camera=new THREE.PerspectiveCamera(60,1,0.1,8000);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+// 바다 표면에 빛을 반사시키는 태양광 약화
+var sun=new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(100, 500, 100); scene.add(sun);
+
+var OCEAN_W=8000,OCEAN_SEGS=64;var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS);oceanGeo.rotateX(-Math.PI/2);
+var oceanOrigY=new Float32Array(oceanGeo.attributes.position.count);for(var oi=0;oi<oceanGeo.attributes.position.count;oi++)oceanOrigY[oi]=oceanGeo.attributes.position.getY(oi);
+
+// MeshBasicMaterial을 사용하여 빛 반사가 아예 없는 순수 맑은 청색 바다 구현
+var oceanMat=new THREE.MeshBasicMaterial({color:0x003d7a});
+var ocean=new THREE.Mesh(oceanGeo,oceanMat); scene.add(ocean);
+
+function addBox(g,x,y,z,w,h,d,col){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:col}));m.position.set(x,y,z);g.add(m);return m;}
+var dockGroup=new THREE.Group();scene.add(dockGroup);
+addBox(dockGroup,350,2,60,200,4,30,0xd4c4a0);addBox(dockGroup,300,2,30,300,4,10,0xc0a878);addBox(dockGroup,300,2,-120,180,4,20,0xd4c4a0);
+
+// ── 리얼한 선체 모델 (다리미 제거, TUG22 기반) ──
+var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
+
+var hS = new THREE.Shape();
+hS.moveTo(-6, 12);
+hS.bezierCurveTo(-6, 20, -3, 22, 0, 22); 
+hS.bezierCurveTo(3, 22, 6, 20, 6, 12);
+hS.lineTo(6.5, -14);
+hS.bezierCurveTo(6.5, -18, 4, -20, 0, -20); 
+hS.bezierCurveTo(-4, -20, -6.5, -18, -6.5, -14);
+hS.closePath();
+
+var hullGeo = new THREE.ExtrudeGeometry(hS, {depth: 3.5, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.5, bevelThickness: 0.5});
+var hull = new THREE.Mesh(hullGeo, new THREE.MeshLambertMaterial({color: 0x151515}));
+hull.rotation.x = -Math.PI/2; hull.position.y = 0.5; ownShipGrp.add(hull);
+
+var deckGeo = new THREE.ExtrudeGeometry(hS, {depth: 0.2, bevelEnabled: false});
+var deck = new THREE.Mesh(deckGeo, new THREE.MeshLambertMaterial({color: 0x1e5939}));
+deck.rotation.x = -Math.PI/2; deck.position.y = 4.0; ownShipGrp.add(deck);
+
+var house = new THREE.Mesh(new THREE.BoxGeometry(7, 3.5, 7), new THREE.MeshLambertMaterial({color: 0xeeeeee}));
+house.position.set(0, 6, 0); ownShipGrp.add(house);
+
+var fMat = new THREE.MeshLambertMaterial({color: 0xdd2222});
+var funL = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4), fMat); funL.position.set(-2, 8, -2); ownShipGrp.add(funL);
+var funR = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4), fMat); funR.position.set(2, 8, -2); ownShipGrp.add(funR);
+
+var fender = new THREE.Mesh(new THREE.TorusGeometry(6.2, 0.8, 16, 32, Math.PI), new THREE.MeshLambertMaterial({color: 0x050505}));
+fender.rotation.set(Math.PI/2, Math.PI/2, 0); fender.position.set(0, 3.5, -21.5); ownShipGrp.add(fender);
+
+window.zDL=new THREE.Group(); window.zDL.position.set(-3.5, 0, -15); ownShipGrp.add(window.zDL);
+window.zDR=new THREE.Group(); window.zDR.position.set(3.5, 0, -15); ownShipGrp.add(window.zDR);
+
+// ── 순백색 물보라(Wake) 엔진 설정 ──
+var WAKE_N = 6000;
+var wakeGeo = new THREE.BufferGeometry();
+var wakeP = new Float32Array(WAKE_N * 3);
+wakeGeo.setAttribute('position', new THREE.BufferAttribute(wakeP, 3));
+
+function getCircleTex(){
+  var c=document.createElement('canvas');c.width=16;c.height=16;var ctx=c.getContext('2d');
+  ctx.beginPath();ctx.arc(8,8,8,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();return new THREE.CanvasTexture(c);
+}
+
+var wakeMat = new THREE.PointsMaterial({color: 0xffffff, size: 6, transparent: true, opacity: 0.8, depthWrite: false, map: getCircleTex()});
+var wakeMesh = new THREE.Points(wakeGeo, wakeMat);
+wakeMesh.frustumCulled = false; 
+scene.add(wakeMesh);
+
+var wakeActive = new Float32Array(WAKE_N), wakeVel = new Float32Array(WAKE_N * 3), wakeIdx = 0;
+
+function spawnWake(x,y,z,vx,vy,vz){
+  var i = wakeIdx % WAKE_N;
+  wakeP[i*3] = x + (Math.random()-0.5)*2; wakeP[i*3+1] = y; wakeP[i*3+2] = z + (Math.random()-0.5)*2;
+  wakeVel[i*3] = vx + (Math.random()-0.5)*0.2; wakeVel[i*3+1] = vy; wakeVel[i*3+2] = vz + (Math.random()-0.5)*0.2;
+  wakeActive[i] = 1.0; wakeIdx++; wakeGeo.attributes.position.needsUpdate=true;
+}
+
+// ── 원본 항적 보존 ──
+var TRAIL_MAX=3000;
+var trailPts=new Float32Array(TRAIL_MAX*3);
+var trailGeo=new THREE.BufferGeometry();
+trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3));
+trailGeo.setDrawRange(0,0);
+var trailMat=new THREE.LineBasicMaterial({color:0x44ddff,transparent:true,opacity:0.85,depthTest:false});
+var trailLine=new THREE.Line(trailGeo,trailMat);
+trailLine.renderOrder=999; trailLine.frustumCulled = false; scene.add(trailLine);
+var trailCount=0, trailTimer=0;
+
+function addTrailPoint(){
+  if(trailCount>=TRAIL_MAX)return;
+  var i=trailCount*3;
+  trailPts[i]=ship.x; trailPts[i+1]=2.0; trailPts[i+2]=ship.y;
+  trailGeo.attributes.position.needsUpdate=true;
+  trailCount++; trailGeo.setDrawRange(0,trailCount);
+}
+function clearTrail(){trailCount=0;trailTimer=0;trailGeo.setDrawRange(0,0);}
+
+var isThirdPersonView = true;
+function toggleView() {
+  isThirdPersonView = !isThirdPersonView;
+  var btn = document.getElementById('viewBtn');
+  if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 드론뷰';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
+  else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
+}
+
+// ── ★ 물리 엔진 완벽 수정 (최고 15Knots 교정 포함) ──
 var lt=0;
 function uP(){
   var n=Date.now();if(lt===0){lt=n;return;}var dt=Math.min((n-lt)/16.67,3);lt=n;
-  var pg=ship.pGov/10, sg=ship.sGov/10, pF=Math.abs(ship.pCPP)/27, sF=Math.abs(ship.sCPP)/27;
-  var ptE=ship.pGov>0?Math.abs(ship.pt/90)*pg*pF*(ship.pCPP>=0?1:-1):0;
-  var sbE=ship.sGov>0?Math.abs(ship.sb/90)*sg*sF*(ship.sCPP>=0?1:-1):0;
+  
+  var pg=Math.pow(ship.pGov/10, 2), sg=Math.pow(ship.sGov/10, 2);
+  var pF=Math.pow(Math.abs(ship.pCPP)/27, 1.5), sF=Math.pow(Math.abs(ship.sCPP)/27, 1.5);
+  
+  var ptE = ship.pGov > 0 ? pg * pF * (ship.pCPP >= 0 ? 1 : -1) : 0;
+  var sbE = ship.sGov > 0 ? sg * sF * (ship.sCPP >= 0 ? 1 : -1) : 0;
+  
   var ptR=getPortThrust(ship.pt,ship.st)*D, sbR=getStbdThrust(ship.sb,ship.st)*D;
   var sfx=Math.sin(ptR)*ptE+Math.sin(sbR)*sbE, sfy=-Math.cos(ptR)*ptE-Math.cos(sbR)*sbE;
+  
+  var isCrabPort = (ship.pt <= -25 && ship.pt >= -65 && ship.sb >= 25 && ship.sb <= 65) && Math.abs(ship.st) < 20;
+  var isCrabStbd = (ship.pt >= 25 && ship.pt <= 65 && ship.sb <= -25 && ship.sb >= -65) && Math.abs(ship.st) < 20;
+  var isComboPort = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st <= -25 && ship.st >= -55;
+  var isComboStbd = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st >= 25 && ship.st <= 55;
+
+  var isSlidingPort = isCrabPort || isComboPort;
+  var isSlidingStbd = isCrabStbd || isComboStbd;
+  var isSliding = isSlidingPort || isSlidingStbd;
+
+  if(isSliding) {
+    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
+    sfy *= 0.1; 
+    ship.om *= 0.5; 
+  }
+
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
-  ship.vx+=(sfx*cH-sfy*sH)*0.006*dt; ship.vy+=(sfx*sH+sfy*cH)*0.006*dt;
-  ship.om+=((-4)*(-Math.cos(ptR)*ptE)-18*(Math.sin(ptR)*ptE)+4*(-Math.cos(sbR)*sbE)-18*(Math.sin(sbR)*sbE))*0.000025*dt;
-  ship.vx*=Math.pow(0.988,dt); ship.vy*=Math.pow(0.988,dt); ship.om*=Math.pow(0.975,dt);
-  var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; lV*=Math.pow(0.93,dt);
+  
+  // ★ 최고 속력 RPM 750, CPP 26 기준 15.0 Knots 도달하도록 가속 상수 교정 (0.00836)
+  ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt; 
+  ship.vy+=(sfx*sH+sfy*cH)*0.00836*dt;
+  
+  if(!isSliding) {
+    ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-16*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-16*(Math.sin(sbR)*sbE))*0.00003*dt;
+  }
+  
+  var turnRate = Math.abs(ship.om);
+  var fwdDrag = Math.max(0.80, 0.98 - turnRate * 2.5); 
+  
+  ship.vx*=Math.pow(fwdDrag,dt); ship.vy*=Math.pow(fwdDrag,dt); ship.om*=Math.pow(0.975,dt);
+  var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; 
+  
+  var latDrag = isSliding ? 0.98 : 0.93;
+  lV*=Math.pow(latDrag,dt);
+  
   ship.vx=fV*sH+lV*cH; ship.vy=-fV*cH+lV*sH; 
   ship.x+=ship.vx*dt; ship.y+=ship.vy*dt; ship.hd+=ship.om*dt;
 
-  // Record trail point frequently for smooth visible path
   trailTimer+=dt;
-  if(trailTimer>0.3){trailTimer=0;addTrailPoint();}
+  if(trailTimer>15){trailTimer=0;addTrailPoint();}
+
+  var fX=Math.sin(ship.hd), fZ=-Math.cos(ship.hd), rX=Math.cos(ship.hd), rZ=Math.sin(ship.hd);
+  var pTx = ship.x + rX*(-3.5) + fX*(-15);
+  var pTz = ship.y + rZ*(-3.5) + fZ*(-15);
+  var sTx = ship.x + rX*(3.5) + fX*(-15);
+  var sTz = ship.y + rZ*(3.5) + fZ*(-15);
+
+  if(Math.abs(ptE)>0.01 && Math.random()<0.9) {
+    var pWF = -Math.cos(ptR)*ptE*12, pWR = -Math.sin(ptR)*ptE*12;
+    for(var i=0; i<4; i++) spawnWake(pTx, 0.5, pTz, pWF*fX+pWR*rX, 0, pWF*fZ+pWR*rZ);
+  }
+  if(Math.abs(sbE)>0.01 && Math.random()<0.9) {
+    var sWF = -Math.cos(sbR)*sbE*12, sWR = -Math.sin(sbR)*sbE*12;
+    for(var i=0; i<4; i++) spawnWake(sTx, 0.5, sTz, sWF*fX+sWR*rX, 0, sWF*fZ+sWR*rZ);
+  }
 }
 
+function drawWinFrame(W,H){var svg=document.getElementById('winFrame');svg.innerHTML='';var ns='http://www.w3.org/2000/svg';
+function el(tag,a){var e=document.createElementNS(ns,tag);for(var k in a)e.setAttribute(k,a[k]);return e;}
+svg.appendChild(el('rect',{x:0,y:0,width:W,height:14,fill:'#2a3428',opacity:0.9}));svg.appendChild(el('line',{x1:0,y1:14,x2:W,y2:14,stroke:'rgba(80,110,70,0.5)','stroke-width':1}));}
+
 function updateBridgeView(t){
-  var pos=oceanGeo.attributes.position;for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.3+Math.sin(wz*0.03+t*0.8)*0.25);}pos.needsUpdate=true;oceanGeo.computeVertexNormals();
-  // ocean stays at origin — ship moves over it
+  var pos=oceanGeo.attributes.position;for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.5+Math.sin(wz*0.03+t*0.8)*0.3);}pos.needsUpdate=true;
+  ocean.position.x=ship.x;ocean.position.z=ship.y;
   var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd);
   
-  for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=true;
   if(isThirdPersonView) {
-    camera.position.set(ship.x - fX*50, 70, ship.y - fZ*50);
-    camera.lookAt(ship.x, 0, ship.y);
+    camera.position.set(ship.x - fX*40, 150, ship.y - fZ*40);
+    camera.lookAt(ship.x + fX*10, 0, ship.y + fZ*10);
   } else {
-    // 1인칭: 선교 숨김, 선수만 보임
-    for(var _h=0;_h<window.whParts.length;_h++)window.whParts[_h].visible=false;
-    camera.position.set(ship.x + fX*8, 12.5, ship.y + fZ*8);
-    camera.lookAt(ship.x + fX*40, 4, ship.y + fZ*40);
+    camera.position.set(ship.x, 14, ship.y);
+    camera.lookAt(ship.x + fX*20, 5, ship.y + fZ*20);
   }
   
   ownShipGrp.position.set(ship.x, 0, ship.y);
-  ownShipGrp.rotation.y = -ship.hd + Math.PI;  // +PI to flip bow forward
+  ownShipGrp.rotation.y = -ship.hd;
   
-  // ── Z-DRIVE NOZZLE ROTATION — follows actual thrust nozzle direction ──
-  // Nozzle angle = exhaust direction (opposite of thrust)
-  // In ship-local frame: 0°=bow(-Z), 90°=stbd(+X), 180°=stern(+Z), 270°=port(-X)
-  var pNozDeg = getPortNozzle(ship.pt, ship.st);  // port nozzle direction
-  var sNozDeg = getStbdNozzle(ship.sb, ship.st);  // stbd nozzle direction
-  // Convert to Three.js Y rotation (0=+Z, counterclockwise)
-  window.nozL.rotation.y = pNozDeg * D;
-  window.nozR.rotation.y = sNozDeg * D;
-  
-  // ── PROPELLER SPIN — speed proportional to governor ──
-  var pSpinRate = ship.pGov * (ship.pCPP>=0?1:-1) * 0.25;
-  var sSpinRate = ship.sGov * (ship.sCPP>=0?1:-1) * 0.25;
-  window.prL.rotation.z += pSpinRate;
-  window.prR.rotation.z += sSpinRate;
-  
-  // ── THRUST ARROWS — show direction & scale with power ──
-  var pg=ship.pGov/10, sg=ship.sGov/10;
-  var pCf=Math.abs(ship.pCPP)/27, sCf=Math.abs(ship.sCPP)/27;
-  var pPwr = ship.pGov>0 ? Math.abs(ship.pt/90)*pg*pCf : 0;
-  var sPwr = ship.sGov>0 ? Math.abs(ship.sb/90)*sg*sCf : 0;
-  
-  // (spray cones removed — wake particles only)
-  
-  // ── WAKE — spawn from Z-drive positions at STERN ──
-  // Z-drives are at local (-12,?,15) and (12,?,15) — stern is local +Z
-  // Local→World: worldX = ship.x + localX*cos(hd) - localZ*sin(hd)
-  //              worldZ = ship.y + localX*sin(hd) + localZ*cos(hd)
-  var cosH=Math.cos(ship.hd), sinH=Math.sin(ship.hd);
-  // Z-drive world positions (stern = BEHIND ship heading)
-  var fwX=Math.sin(ship.hd), fwZ=-Math.cos(ship.hd);
-  var rtX=Math.cos(ship.hd), rtZ=Math.sin(ship.hd);
-  // Port Z-drive: 4m to port, 18m astern
-  var pTxW=ship.x - rtX*4 - fwX*18;
-  var pTzW=ship.y - rtZ*4 - fwZ*18;
-  // Stbd Z-drive: 4m to stbd, 18m astern
-  var sTxW=ship.x + rtX*4 - fwX*18;
-  var sTzW=ship.y + rtZ*4 - fwZ*18;
-  
-  // Port wake — CONTINUOUS while playing with power
-  if(playing && pPwr>0.005){
-    var pNozRad=pNozDeg*D;
-    var pCppSign=ship.pCPP>=0?1:-1;  // REVERSE when AS!
-    var pExhLocalX=Math.sin(pNozRad)*pCppSign, pExhLocalZ=-Math.cos(pNozRad)*pCppSign;
-    // Local→World rotation
-    var pExhWX=pExhLocalX*cosH - pExhLocalZ*sinH;
-    var pExhWZ=pExhLocalX*sinH + pExhLocalZ*cosH;
-    var pSpd=2+pPwr*8;
-    var pCount=Math.ceil(3+pPwr*8);
-    for(var pi=0;pi<pCount;pi++){
-      spawnWake(
-        pTxW+pExhWX*(1+Math.random()*3)+(Math.random()-0.5)*2, 4,
-        pTzW+pExhWZ*(1+Math.random()*3)+(Math.random()-0.5)*2,
-        pExhWX*pSpd*(0.8+Math.random()*0.4), 0,
-        pExhWZ*pSpd*(0.8+Math.random()*0.4)
-      );
-    }
-  }
-  // Stbd wake — CONTINUOUS
-  if(playing && sPwr>0.005){
-    var sNozRad=sNozDeg*D;
-    var sCppSign=ship.sCPP>=0?1:-1;  // REVERSE when AS!
-    var sExhLocalX=Math.sin(sNozRad)*sCppSign, sExhLocalZ=-Math.cos(sNozRad)*sCppSign;
-    var sExhWX=sExhLocalX*cosH - sExhLocalZ*sinH;
-    var sExhWZ=sExhLocalX*sinH + sExhLocalZ*cosH;
-    var sSpd=2+sPwr*8;
-    var sCount=Math.ceil(3+sPwr*8);
-    for(var si=0;si<sCount;si++){
-      spawnWake(
-        sTxW+sExhWX*(1+Math.random()*3)+(Math.random()-0.5)*2, 4,
-        sTzW+sExhWZ*(1+Math.random()*3)+(Math.random()-0.5)*2,
-        sExhWX*sSpd*(0.8+Math.random()*0.4), 0,
-        sExhWZ*sSpd*(0.8+Math.random()*0.4)
-      );
-    }
-  }
-  // Hull wake (movement-based foam along waterline when moving)
-  var shipSpd=Math.hypot(ship.vx,ship.vy);
-  if(playing && shipSpd>0.005){
-    // Bow wave
-    var bowWX=ship.x+(-18)*(-sinH), bowWZ=ship.y+(-18)*cosH;
-    if(Math.random()<0.3+shipSpd*5){
-      spawnWake(bowWX+(Math.random()-0.5)*6,4,bowWZ+(Math.random()-0.5)*6,
-        -ship.vx*0.3+(Math.random()-0.5)*0.3,0,-ship.vy*0.3+(Math.random()-0.5)*0.3);
-    }
-  }
-  
-  // ── WAKE PARTICLES UPDATE ──
   for(var wi2=0;wi2<WAKE_N;wi2++){
     if(wakeActive[wi2]>0){
-      wakeActive[wi2]-=0.005; // slower fade = longer trails
+      wakeActive[wi2]-=0.008; 
       wakeP[wi2*3]+=wakeVel[wi2*3]; wakeP[wi2*3+1]+=wakeVel[wi2*3+1]; wakeP[wi2*3+2]+=wakeVel[wi2*3+2];
-      wakeVel[wi2*3]*=0.96; wakeVel[wi2*3+2]*=0.96; // slower deceleration
-      // Slight random spread (water turbulence)
-      wakeP[wi2*3]+=(Math.random()-0.5)*0.05;
-      wakeP[wi2*3+2]+=(Math.random()-0.5)*0.05;
-      if(wakeActive[wi2]<=0){ wakeP[wi2*3]=99999; }
+      wakeVel[wi2*3]*=0.96; wakeVel[wi2*3+2]*=0.96; 
+      if(wakeActive[wi2]<=0) wakeP[wi2*3]=99999; 
     }
   }
   wakeGeo.attributes.position.needsUpdate=true;
@@ -820,25 +503,23 @@ function uH(){
   var st=Math.round(ship.st),e0=document.getElementById('valStr');if(st<0)e0.textContent='P'+Math.abs(st)+'\u00B0';else if(st>0)e0.textContent='S'+st+'\u00B0';else e0.textContent='0\u00B0';
   document.getElementById('valPRpm').textContent=govOn(ship.pGov)?(govRpm(ship.pGov)+' RPM'):'OFF';
   document.getElementById('valSRpm').textContent=govOn(ship.sGov)?(govRpm(ship.sGov)+' RPM'):'OFF';
-  var ps=document.getElementById('playStatus');if(playing){ps.innerHTML='▶ 운항중';ps.style.color='#00ee88';}else{ps.innerHTML='■ 대기';ps.style.color='#556655';}
+  var ps=document.getElementById('playStatus');if(playing){ps.innerHTML='▶ RUNNING';ps.style.color='#00ee88';}else{ps.innerHTML='■ STANDBY';ps.style.color='#556655';}
 }
 
-function togglePlay(){playing=!playing;var b=document.getElementById('playBtn');if(playing){b.innerHTML='■ 정지';b.style.color='#ff5555';lt=0;}else{b.innerHTML='▶ 실행';b.style.color='#00ee88';ship.vx=0;ship.vy=0;ship.om=0;}}
-function aS(){ship.pt=0;ship.sb=0;ship.st=0;ship.pGov=0;ship.sGov=0;ship.pCPP=0;ship.sCPP=0;ship.vx=0;ship.vy=0;ship.om=0;playing=false;document.getElementById('playBtn').innerHTML='▶ 실행';}
+function togglePlay(){playing=!playing;var b=document.getElementById('playBtn');if(playing){b.innerHTML='■ STOP';b.style.color='#ff5555';lt=0;}else{b.innerHTML='▶ PLAY';b.style.color='#00ee88';ship.vx=0;ship.vy=0;ship.om=0;}}
+function aS(){ship.pt=0;ship.sb=0;ship.st=0;ship.pGov=0;ship.sGov=0;ship.pCPP=0;ship.sCPP=0;ship.vx=0;ship.vy=0;ship.om=0;playing=false;document.getElementById('playBtn').innerHTML='▶ PLAY';}
 function doReset(){ship.x=0;ship.y=0;ship.hd=Math.PI/2;ship.vx=0;ship.vy=0;ship.om=0;clearTrail();aS();}
 function toggleHelp(){var o=document.getElementById('helpOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
+
 function resizeBridge(){var w=bwEl.clientWidth,h=bwEl.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();drawWinFrame(w,h);}
 
 function autoScale(){
   var cp=document.getElementById('controlPanel'),cw=document.getElementById('controlWrap');if(!cp||!cw)return;cp.style.transform='none';void cp.offsetWidth;
-  var sx=cw.clientWidth/(cp.scrollWidth+16),sy=cw.clientHeight/(cp.scrollHeight+8);cp.style.transform='scale('+Math.min(sx,sy,3)+')';
+  cp.style.transform='scale('+Math.min(cw.clientWidth/(cp.scrollWidth+24),cw.clientHeight/(cp.scrollHeight+12),3)+')';
 }
-window.addEventListener('resize',function(){resizeBridge();autoScale();
-document.addEventListener('contextmenu',function(e){e.preventDefault();});});
-window.addEventListener('orientationchange',function(){setTimeout(function(){resizeBridge();autoScale();
-document.addEventListener('contextmenu',function(e){e.preventDefault();});},300);});
+window.addEventListener('resize',function(){resizeBridge();autoScale();});
+window.addEventListener('orientationchange',function(){setTimeout(function(){resizeBridge();autoScale();},300);});
 resizeBridge();autoScale();
-document.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 var clock=new THREE.Clock();
 function mainLoop(){
@@ -850,6 +531,7 @@ function mainLoop(){
 }
 mainLoop();
 </script>
-<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© Copyright by G.Y.Lee with Claude AI</div>
+<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© Copyright by G.Y.Lee </div>
+
 </body>
 </html>

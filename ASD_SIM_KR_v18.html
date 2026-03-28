@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-   <div style="margin-top:20px; padding:12px; background:rgba(200,50,50,0.1); border-left:4px solid #dd4444; border-radius:4px; font-size:11px; line-height:1.6; color:#e0f0d8;">
-      <b style="color:#ff6666;">ⓒ 2026 G.Y. Lee. All rights reserved.</b><br>
-      본 시뮬레이터 프로그램은 전 세계 선원들의 교육 및 훈련을 위해 무료로 제공됩니다.<br>
-      단, 상업적 이용 및 소스 코드의 무단 변경, 재배포를 엄격히 금지합니다.
-    </div>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.3, maximum-scale=5.0, user-scalable=yes">
-<title>ASD Tug Bridge Simulator - Drone View Pro</title>
+<title>Tugboat Maneuvering Simulator -(KHI Rex)Mobile Pro V325</title>
 <style>
+/* 원본 레이아웃 및 CSS 완벽 복구 */
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Courier New',monospace;color:#c0d4e8;user-select:none;display:flex;flex-direction:column}
 #topbar{display:flex;align-items:center;justify-content:space-between;padding:5px 14px;background:rgba(4,10,20,0.98);border-bottom:2px solid rgba(60,90,60,0.5);font-size:11px;flex-shrink:0;flex-wrap:wrap;gap:10px;z-index:10}
@@ -35,7 +32,7 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 </head>
 <body>
 <div id="topbar">
-  <span style="color:#8ad870;font-weight:700;font-size:13px;letter-spacing:1px">⚓ ASD TUG · BRIDGE SIMULATOR <span style="color:#446644;font-size:9px">3D PRO</span></span>
+  <span style="color:#8ad870;font-weight:700;font-size:13px;letter-spacing:1px">⚓ Tugboat Maneuvering Simulator(KHI Rex)<span style="color:#446644;font-size:9px">V325 Mobile Pro</span></span>
   <div style="display:flex;gap:16px;align-items:center;font-size:11px">
     <span>HDG <b id="valHdg" style="color:#edc740">090°</b></span>
     <span>SPD <b id="valSpd" style="color:#4dd88a">0.0 kts</b></span>
@@ -43,32 +40,33 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
     <span>P-RPM <b id="valPRpm" style="color:#f0a040">OFF</b></span>
     <span>S-RPM <b id="valSRpm" style="color:#f0a040">OFF</b></span>
     <span id="playStatus" style="color:#556655;font-weight:700">■ STANDBY</span>
+    <button class="qbtn" onclick="toggleFullScreen()" style="background:rgba(100,150,255,0.2);border-color:rgba(100,150,255,0.5);color:#88ccff;">⛶ FULLSCREEN</button>
     <button class="qbtn" onclick="doReset()">⟳ RESET</button>
-    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ 시점: 드론뷰</button>
+    <button class="qbtn" onclick="toggleView()" id="viewBtn" style="background:rgba(0,238,136,0.2);border-color:rgba(0,238,136,0.5);color:#00ee88;font-weight:700;font-size:11px;padding:3px 10px">👁️ Drone View</button>
     <button class="qbtn" onclick="toggleHelp()" style="background:rgba(0,150,220,0.2);border-color:rgba(0,150,220,0.5);color:#40bbee;font-weight:700;font-size:11px;padding:3px 10px">? HELP</button>
   </div>
 </div>
 
-<div id="helpOverlay" onclick="if(event.target===this)toggleHelp()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-<div id="helpBox" style="background:linear-gradient(135deg,#f4f6f3,#e8ebe6);color:#1a2a1a;border-radius:16px;max-width:680px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;position:relative">
+<div id="helpOverlay" onclick="if(event.target===this)toggleHelp()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:flex-end;padding-right:20px;">
+<div id="helpBox" style="background:linear-gradient(135deg,#f4f6f3,#e8ebe6);color:#1a2a1a;border-radius:16px;max-width:450px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;position:relative">
   <div style="background:linear-gradient(135deg,#2a3a28,#3a4a38);color:#e0f0d8;padding:18px 24px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:18px;font-weight:900;letter-spacing:2px">⚓ USER MANUAL</div>
-    <button onclick="toggleHelp()" style="background:none;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="font-size:18px;font-weight:900;letter-spacing:2px">⚓ ?Help</div>
+    <button onclick="toggleHelp()" style="background:none;border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-weight:700;display:flex;align-items:right;justify-content:right">✕</button>
   </div>
   <div style="padding:20px 24px 24px 24px;font-size:13.5px;line-height:2">
     <div style="background:#2a3a28;color:#a0d890;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:12px;line-height:1.8">
-      <b style="color:#edc740;font-size:14px">ASD TUG 3D BRIDGE SIMULATOR</b><br>A 3D maneuvering simulator for Azimuth Stern Drive (ASD) tugboats. Observe accurate Z-Drive thrust vectoring.
+      <b style="color:#edc740;font-size:14px">Tugboat Maneuvering Simulator (KHI Rex) V325</b><br>A 3D maneuvering simulator for Azimuth Stern Drive (ASD) tugboats. Observe accurate Z-Drive thrust vectoring.
     </div>
     <b style="color:#0066aa;font-size:15px">🎮 Controls</b>
     <table style="width:100%;border-collapse:collapse;margin:8px 0 16px 0;font-size:12.5px">
       <tr style="background:#d8e4d6"><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8;width:40%">Function</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Keyboard</td><td style="padding:6px 10px;font-weight:700;border:1px solid #bcc8b8">Mouse / Touch</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Steering (Helm)</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag C-ring wheel</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left lever</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Lever</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right lever</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag left slider</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd Governor</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">Drag right slider</td></tr>
-      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Port CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP left slider</td></tr>
-      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">Stbd CPP Blade</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">CPP right slider</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">조타콤비핸들</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>A</b> / <b>D</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">C-휠 회전</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현조타레버</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>W</b>(↑) / <b>S</b>(↓)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현레버위치이동</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현조타레버</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>↑</b> / <b>↓</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">우현레버위치이동</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현가바나</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Q</b>(+) / <b>E</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현레버위치이동</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현가바나</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>Z</b>(+) / <b>X</b>(−)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">우현레버위치이동</td></tr>
+      <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현CPP각도</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>I</b>(AH) / <b>K</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">좌현CPP레버위치이동</td></tr>
+      <tr><td style="padding:5px 10px;border:1px solid #d0d8cc">우현CPP각도</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>O</b>(AH) / <b>L</b>(AS)</td><td style="padding:5px 10px;border:1px solid #d0d8cc">우현CPP레버위치이동</td></tr>
       <tr style="background:#eef2ec"><td style="padding:5px 10px;border:1px solid #d0d8cc">Start / Stop</td><td style="padding:5px 10px;border:1px solid #d0d8cc;font-family:monospace"><b>P</b></td><td style="padding:5px 10px;border:1px solid #d0d8cc">▶ PLAY button</td></tr>
     </table>
   </div>
@@ -80,7 +78,6 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
   <svg id="winFrame" xmlns="http://www.w3.org/2000/svg" style="display:none"></svg>
   <div id="keyhint">Steer: A/D · Port CPP: W/S · Stbd CPP: ↑/↓<br>P-Gov: Q/E · S-Gov: Z/X · Play: P · E-Stop: Space</div>
   <div id="dbg"></div>
-  <div id="dirBox">STOP</div>
 </div>
 
 <div id="controlWrap">
@@ -115,8 +112,23 @@ body{width:100vw;height:100vh;overflow:hidden;background:#080e18;font-family:'Co
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 "use strict";
+
+// ★ 전체화면 토글 함수 (모바일 편의성 위해 유지)
+function toggleFullScreen() {
+  if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement) {
+    if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    else if (document.documentElement.mozRequestFullScreen) { document.documentElement.mozRequestFullScreen(); }
+    else if (document.documentElement.webkitRequestFullscreen) { document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+  } else {
+    if (document.cancelFullScreen) { document.cancelFullScreen(); }
+    else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+    else if (document.webkitCancelFullScreen) { document.webkitCancelFullScreen(); }
+  }
+  setTimeout(resizeBridge, 300);
+}
+
 // =========================================================================
-// 1. 원본 UI 및 컨트롤 로직 (완벽 보존)
+// 1. 원본 UI 및 컨트롤 로직 (100% 원본 유지)
 // =========================================================================
 var D=Math.PI/180, R2D=180/Math.PI;
 var ship={x:0,y:0,vx:0,vy:0,hd:Math.PI/2,om:0,st:0,pt:0,sb:0,pGov:0,sGov:0,pCPP:0,sCPP:0};
@@ -255,14 +267,59 @@ function dCH(){
   c.restore();
 }
 
+// =========================================================================
+// [4. 터치 및 마우스 입력 처리 (Touch & Mouse Input Control)]
+// 모바일 터치나 마우스 드래그로 조종간을 조작하는 이벤트 리스너들입니다.
+// =========================================================================
 var mouseDrag=null,wSA=0,wSS=0,touches={};
-function hitCombo(cX,cY){var r=cc.getBoundingClientRect();var mx=(cX-r.left)/r.width*260-130,my=(cY-r.top)/r.height*235-118;if(mx>-28&&mx<0&&my>-33&&my<33)return'pt';if(mx>=0&&mx<28&&my>-33&&my<33)return'sb';return'wh';}
+
+// [수정됨] 화면 상의 좌표를 받아 어느 레버를 만졌는지 판정합니다.
+function hitCombo(cX,cY){
+  var r=cc.getBoundingClientRect();
+  var mx=(cX-r.left)/r.width*260-130, my=(cY-r.top)/r.height*235-118;
+  
+  // 1. 중앙 개별 레버(Port / Stbd) 터치 인식
+  if(mx>-28&&mx<0&&my>-33&&my<33) return 'pt';
+  if(mx>=0&&mx<28&&my>-33&&my<33) return 'sb';
+  
+  // 2. [추가된 로직] 중심점으로부터의 거리를 계산 (피타고라스 정리)
+  var dist = Math.sqrt(mx*mx + my*my);
+  
+  // 거리가 65 이상, 120 이하인 바깥쪽 둥근 테두리를 잡았을 때만 메인 휠(wh)로 인식!
+  if(dist > 65 && dist < 120) return 'wh';
+  
+  // 빈 공간을 누르면 아무것도 안 함
+  return null; 
+}
+
 cc.addEventListener('mousedown',function(e){var m=hitCombo(e.clientX,e.clientY);mouseDrag=m;if(m==='wh'){var r=cc.getBoundingClientRect();wSA=Math.atan2((e.clientX-r.left)/r.width*260-130,-((e.clientY-r.top)/r.height*235-118))*R2D;wSS=ship.st;}});
 cc.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],m=hitCombo(t.clientX,t.clientY),info={mode:m};if(m==='wh'){var r=cc.getBoundingClientRect();info.wSA=Math.atan2((t.clientX-r.left)/r.width*260-130,-((t.clientY-r.top)/r.height*235-118))*R2D;info.wSS=ship.st;}touches[t.identifier]=info;}},{passive:false});
-function doStXY(cX,cY){var r=cc.getBoundingClientRect();ship.st=Math.max(-90,Math.min(90,wSS+(Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D-wSA)));}
-function doStXYT(cX,cY,info){var r=cc.getBoundingClientRect();ship.st=Math.max(-90,Math.min(90,info.wSS+(Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D-info.wSA)));}
+
+// [수정됨] 마우스/터치로 휠을 드래그할 때 묵직하게 돌아가도록 무게감을 추가했습니다.
+function doStXY(cX,cY){
+  var r=cc.getBoundingClientRect();
+  var currentAngle = Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D;
+  var deltaAngle = currentAngle - wSA;
+  
+  // [조작감 튜닝 가이드] 
+  // SENSITIVITY(민감도)를 0.5로 설정하여 손을 움직인 거리의 50%만 휠이 따라가게 합니다.
+  // 더 뻑뻑하게 하려면 0.3, 원래대로 가볍게 하려면 1.0으로 수정하세요.
+  var SENSITIVITY = 0.5; 
+  ship.st=Math.max(-90,Math.min(90,wSS+(deltaAngle * SENSITIVITY)));
+}
+
+function doStXYT(cX,cY,info){
+  var r=cc.getBoundingClientRect();
+  var currentAngle = Math.atan2((cX-r.left)/r.width*260-130,-((cY-r.top)/r.height*235-118))*R2D;
+  var deltaAngle = currentAngle - info.wSA;
+  
+  var SENSITIVITY = 0.5; // 터치 시 무게감 계수
+  ship.st=Math.max(-90,Math.min(90,info.wSS+(deltaAngle * SENSITIVITY)));
+}
+
 function doThY(cY,mode){var r=cc.getBoundingClientRect();var v=Math.max(-90,Math.min(90,((118-(cY-r.top)/r.height*235)/58)*90));if(mode==='pt')ship.pt=v;else ship.sb=v;}
 
+// --- 아래는 기존에 정상 작동하던 거버너, CPP, 전역 마우스 이벤트 (그대로 유지) ---
 function isPortGov(cX){var r=govCv.getBoundingClientRect();return(cX-r.left)/r.width<0.5;}
 govCv.addEventListener('mousedown',function(e){mouseDrag=isPortGov(e.clientX)?'gvP':'gvS';doGovY(e.clientY,mouseDrag==='gvP');});
 govCv.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],ip=isPortGov(t.clientX);touches[t.identifier]={mode:ip?'gvP':'gvS'};doGovY(t.clientY,ip);}},{passive:false});
@@ -277,7 +334,6 @@ window.addEventListener('mousemove',function(e){if(!mouseDrag)return;if(mouseDra
 window.addEventListener('mouseup',function(){mouseDrag=null;});
 window.addEventListener('touchmove',function(e){var ha=false;for(var k in touches)ha=true;if(!ha)return;e.preventDefault();for(var i=0;i<e.changedTouches.length;i++){var t=e.changedTouches[i],info=touches[t.identifier];if(!info)continue;if(info.mode==='wh')doStXYT(t.clientX,t.clientY,info);else if(info.mode==='pt'||info.mode==='sb')doThY(t.clientY,info.mode);else if(info.mode==='gvP')doGovY(t.clientY,true);else if(info.mode==='gvS')doGovY(t.clientY,false);else if(info.mode==='cpP')doCppY(t.clientY,true);else if(info.mode==='cpS')doCppY(t.clientY,false);}},{passive:false});
 window.addEventListener('touchend',function(e){for(var i=0;i<e.changedTouches.length;i++)delete touches[e.changedTouches[i].identifier];});
-
 function pI(){
   if(pk['a']||pk['A'])ship.st=Math.max(-90,ship.st-0.6);if(pk['d']||pk['D'])ship.st=Math.min(90,ship.st+0.6);
   if(pk['w']||pk['W'])ship.pt=Math.min(90,ship.pt+1.2);if(pk['s']||pk['S'])ship.pt=Math.max(-90,ship.pt-1.2);
@@ -290,7 +346,7 @@ function pI(){
 }
 
 // ══════════════════════════════════════════════════════════
-//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS (★ 정밀 교정 구역 ★)
+//  2. THREE.JS — BRIDGE 3D VIEW & PHYSICS
 // ══════════════════════════════════════════════════════════
 var bwEl=document.getElementById('bridgewrap'),bCanvas=document.getElementById('bridgeCanvas');
 var renderer=new THREE.WebGLRenderer({canvas:bCanvas,antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -301,13 +357,12 @@ scene.background=new THREE.Color(0x004488);
 var camera=new THREE.PerspectiveCamera(60,1,0.1,8000);
 
 scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-// 바다 표면에 빛을 반사시키는 태양광 약화
 var sun=new THREE.DirectionalLight(0xffffff, 0.5); sun.position.set(100, 500, 100); scene.add(sun);
 
 var OCEAN_W=8000,OCEAN_SEGS=64;var oceanGeo=new THREE.PlaneGeometry(OCEAN_W,OCEAN_W,OCEAN_SEGS,OCEAN_SEGS);oceanGeo.rotateX(-Math.PI/2);
 var oceanOrigY=new Float32Array(oceanGeo.attributes.position.count);for(var oi=0;oi<oceanGeo.attributes.position.count;oi++)oceanOrigY[oi]=oceanGeo.attributes.position.getY(oi);
 
-// MeshBasicMaterial을 사용하여 빛 반사가 아예 없는 순수 맑은 청색 바다 구현
+// 빛 반사가 아예 없는 순수 맑은 청색 바다 구현
 var oceanMat=new THREE.MeshBasicMaterial({color:0x003d7a});
 var ocean=new THREE.Mesh(oceanGeo,oceanMat); scene.add(ocean);
 
@@ -315,40 +370,256 @@ function addBox(g,x,y,z,w,h,d,col){var m=new THREE.Mesh(new THREE.BoxGeometry(w,
 var dockGroup=new THREE.Group();scene.add(dockGroup);
 addBox(dockGroup,350,2,60,200,4,30,0xd4c4a0);addBox(dockGroup,300,2,30,300,4,10,0xc0a878);addBox(dockGroup,300,2,-120,180,4,20,0xd4c4a0);
 
-// ── 리얼한 선체 모델 (다리미 제거, TUG22 기반) ──
+// ★ V600 상세 ASD 터그보트 3D 선체 모델
 var ownShipGrp = new THREE.Group(); scene.add(ownShipGrp);
 
-var hS = new THREE.Shape();
-hS.moveTo(-6, 12);
-hS.bezierCurveTo(-6, 20, -3, 22, 0, 22); 
-hS.bezierCurveTo(3, 22, 6, 20, 6, 12);
-hS.lineTo(6.5, -14);
-hS.bezierCurveTo(6.5, -18, 4, -20, 0, -20); 
-hS.bezierCurveTo(-4, -20, -6.5, -18, -6.5, -14);
-hS.closePath();
+(function buildTug(G){
+  var mHull  = new THREE.MeshLambertMaterial({color:0x111111});
+  var mDeck  = new THREE.MeshLambertMaterial({color:0x28694a});
+  var mRed   = new THREE.MeshLambertMaterial({color:0xcc1a1a});
+  var mWhite = new THREE.MeshLambertMaterial({color:0xeeecea});
+  var mGray  = new THREE.MeshLambertMaterial({color:0x909090});
+  var mDGray = new THREE.MeshLambertMaterial({color:0x404040});
+  var mBlack = new THREE.MeshLambertMaterial({color:0x080808});
+  var mYellow= new THREE.MeshLambertMaterial({color:0xddaa00});
+  var mWin   = new THREE.MeshLambertMaterial({color:0x4488aa,transparent:true,opacity:0.7});
+  var mRedL  = new THREE.MeshLambertMaterial({color:0xff2200,emissive:0x550000});
+  var mGrnL  = new THREE.MeshLambertMaterial({color:0x22ff44,emissive:0x005500});
+  var mWhtL  = new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x888888});
+  var mLifeR = new THREE.MeshLambertMaterial({color:0xff3300});
+  var mOrange= new THREE.MeshLambertMaterial({color:0xee6600});
 
-var hullGeo = new THREE.ExtrudeGeometry(hS, {depth: 3.5, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.5, bevelThickness: 0.5});
-var hull = new THREE.Mesh(hullGeo, new THREE.MeshLambertMaterial({color: 0x151515}));
-hull.rotation.x = -Math.PI/2; hull.position.y = 0.5; ownShipGrp.add(hull);
+  function bx(w,h,d,mat,x,y,z){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);G.add(m);return m;}
+  function cy(rt,rb,h,seg,mat,x,y,z,rx,ry,rz){var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,Math.max(seg,4)),mat);m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;G.add(m);return m;}
+  function sp(r,seg,mat,x,y,z){var m=new THREE.Mesh(new THREE.SphereGeometry(r,seg,seg),mat);m.position.set(x,y,z);G.add(m);return m;}
+  function tr(R,r,seg,mat,x,y,z,rx,rz){var m=new THREE.Mesh(new THREE.TorusGeometry(R,r,8,seg),mat);m.position.set(x,y,z);if(rx!==undefined)m.rotation.x=rx;if(rz!==undefined)m.rotation.z=rz;G.add(m);return m;}
 
-var deckGeo = new THREE.ExtrudeGeometry(hS, {depth: 0.2, bevelEnabled: false});
-var deck = new THREE.Mesh(deckGeo, new THREE.MeshLambertMaterial({color: 0x1e5939}));
-deck.rotation.x = -Math.PI/2; deck.position.y = 4.0; ownShipGrp.add(deck);
+  // ── 1. HULL ──
+  var hS=new THREE.Shape();
+  // ★ 선미: 직선 측면 유지 + 2% 모서리(r=0.8) 라운딩
+  hS.moveTo(-7.0,-16.2);                                    // port 측면 → 선미 코너 직전
+  hS.quadraticCurveTo(-7.0,-17.0,-6.2,-17.0);              // ★ port-aft 코너 (r≈0.8)
+  hS.lineTo(6.2,-17.0);                                     // ★ 선미 트랜섬 (직선)
+  hS.quadraticCurveTo(7.0,-17.0,7.0,-16.2);                // ★ stbd-aft 코너 (r≈0.8)
+  hS.lineTo(7.0,9);
+  hS.quadraticCurveTo(7.0,20,0,21.8);hS.quadraticCurveTo(-7.0,20,-7.0,9);
+  hS.lineTo(-7.0,-16.2);
+  var hullM=new THREE.Mesh(new THREE.ExtrudeGeometry(hS,{depth:4.8,bevelEnabled:true,bevelSegments:3,bevelSize:0.38,bevelThickness:0.38,steps:1}),mHull);
+  hullM.rotation.x=-Math.PI/2; hullM.position.y=0; G.add(hullM);
 
-var house = new THREE.Mesh(new THREE.BoxGeometry(7, 3.5, 7), new THREE.MeshLambertMaterial({color: 0xeeeeee}));
-house.position.set(0, 6, 0); ownShipGrp.add(house);
+  // ── 2. DECK (teal green) ──
+  var dS=new THREE.Shape();
+  dS.moveTo(-6.8,-16.05);                                   // port 측면 → 선미 코너 직전
+  dS.quadraticCurveTo(-6.8,-16.8,-6.05,-16.8);             // port-aft 코너 (r≈0.75)
+  dS.lineTo(6.05,-16.8);                                    // 선미 트랜섬 (직선)
+  dS.quadraticCurveTo(6.8,-16.8,6.8,-16.05);               // stbd-aft 코너 (r≈0.75)
+  dS.lineTo(6.8,9);
+  dS.quadraticCurveTo(6.8,19.8,0,21.5);dS.quadraticCurveTo(-6.8,19.8,-6.8,9);
+  dS.lineTo(-6.8,-16.05);
+  var deckM=new THREE.Mesh(new THREE.ExtrudeGeometry(dS,{depth:0.2,bevelEnabled:false}),mDeck);
+  deckM.rotation.x=-Math.PI/2; deckM.position.y=4.85; G.add(deckM);
 
-var fMat = new THREE.MeshLambertMaterial({color: 0xdd2222});
-var funL = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4), fMat); funL.position.set(-2, 8, -2); ownShipGrp.add(funL);
-var funR = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 4), fMat); funR.position.set(2, 8, -2); ownShipGrp.add(funR);
+  // ── 3. RED RUBBING STRAKE ──
+  var rO=new THREE.Shape();
+  // ★ 외곽: 직선 측면 + 선미 코너 r≈0.95
+  rO.moveTo(-8.0,-16.65);
+  rO.quadraticCurveTo(-8.0,-17.6,-7.05,-17.6);
+  rO.lineTo(7.05,-17.6);
+  rO.quadraticCurveTo(8.0,-17.6,8.0,-16.65);
+  rO.lineTo(8.0,9);
+  rO.quadraticCurveTo(8.0,22,0,23.5);rO.quadraticCurveTo(-8.0,22,-8.0,9);
+  rO.lineTo(-8.0,-16.65);
+  var rH=new THREE.Path();
+  // ★ 내측 구멍: 헐 외형과 동일 (r≈0.8)
+  rH.moveTo(-7.0,-16.2);
+  rH.quadraticCurveTo(-7.0,-17.0,-6.2,-17.0);
+  rH.lineTo(6.2,-17.0);
+  rH.quadraticCurveTo(7.0,-17.0,7.0,-16.2);
+  rH.lineTo(7.0,9);
+  rH.quadraticCurveTo(7.0,20,0,21.8);rH.quadraticCurveTo(-7.0,20,-7.0,9);
+  rH.lineTo(-7.0,-16.2);
+  rO.holes.push(rH);
+  var redM=new THREE.Mesh(new THREE.ExtrudeGeometry(rO,{depth:1.1,bevelEnabled:false}),mRed);
+  redM.rotation.x=-Math.PI/2; redM.position.y=3.8; G.add(redM);
 
-var fender = new THREE.Mesh(new THREE.TorusGeometry(6.2, 0.8, 16, 32, Math.PI), new THREE.MeshLambertMaterial({color: 0x050505}));
-fender.rotation.set(Math.PI/2, Math.PI/2, 0); fender.position.set(0, 3.5, -21.5); ownShipGrp.add(fender);
+  // ── 4. RUBBER FENDERS ──
+  var DY=5.05;
+  [-13,-7,-1,5,11].forEach(function(fz){
+    tr(1.15,0.42,18,mBlack,-8.1,2.5,fz,Math.PI/2,undefined);
+    tr(1.15,0.42,18,mBlack, 8.1,2.5,fz,Math.PI/2,undefined);
+  });
+  [-2,0,2].forEach(function(bx2){tr(1.0,0.38,16,mBlack,bx2,2.5,-21.5,0,undefined);});
+  tr(0.9,0.34,14,mBlack,-5,2.5,-19.5,Math.PI/3,undefined);
+  tr(0.9,0.34,14,mBlack, 5,2.5,-19.5,Math.PI/3,undefined);
 
-window.zDL=new THREE.Group(); window.zDL.position.set(-3.5, 0, -15); ownShipGrp.add(window.zDL);
-window.zDR=new THREE.Group(); window.zDR.position.set(3.5, 0, -15); ownShipGrp.add(window.zDR);
+ // ── 5. SUPERSTRUCTURE (선실 및 브릿지 창문) *** 수정을 해야하는 부분 ***──
+  // [조정 가능 수치] 상부 구조물의 폭, 높이, 위치 조절
+  // ── 5. SUPERSTRUCTURE ──
+  var SZ=-4.0;
+  // ★ 1층 선실: 폭을 12.0 -> 10.0 으로 줄입니다.
+  bx(10.0, 2.6, 11.5, mWhite, 0, DY+1.3, SZ+2.0); 
 
-// ── 순백색 물보라(Wake) 엔진 설정 ──
+  // ★ 2층 선실: 폭을 11.0 -> 9.0 으로 줄입니다.
+  bx(9.0, 2.4, 9.5,  mWhite, 0, DY+2.6+1.2, SZ+1.8); 
+
+  // ★ 브릿지 탑: 폭을 8.5 -> 7.5 로 줄입니다.
+  bx(7.5, 1.0, 4.5, mWhite, 0, DY+2.6+2.4+0.5, SZ+0.5);
+   
+  // ★ 기존 두꺼운 창문을 날리고, 시야가 뚫린 얇은 기둥 2개만 세우기
+  var pW = 0.12;     // 기둥의 두께 (숫자를 키우면 기둥이 두꺼워집니다)
+  var pH = 0.75;     // 기둥의 높이
+  var pD = 0.15;     // 기둥의 앞뒤 깊이
+  var pY = DY + 3.9; // 기둥의 Y(상하) 위치
+  var pZ = SZ - 3.3; // 기둥의 Z(앞뒤) 위치
+
+  bx(pW, pH, pD, mWhite, -2.1, pY, pZ); // 좌측 기둥
+  bx(pW, pH, pD, mWhite,  2.1, pY, pZ); // 우측 기둥
+
+  // (선택 사항) 만약 뻥 뚫린 허공이 아니라 얇은 '유리창' 느낌을 덧대고 싶으시면 
+  // 아래 줄의 맨 앞 '//' 를 지워주시면 됩니다.
+   for(var wz=-2;wz<=2;wz+=2.0){bx(0.08,0.7,1.0,mWin,-5.5,DY+3.9,SZ+wz);bx(0.08,0.7,1.0,mWin,5.5,DY+3.9,SZ+wz);} // 측면 창문
+  for(var wi2=-3.5;wi2<=3.5;wi2+=1.75) bx(1.0,0.6,0.08,mWin,wi2,DY+1.4,SZ-3.8); // 1층 창문
+  
+  cy(0.45,0.45,0.25,10,mGray,-6.6,DY+4.6,SZ-1.2,Math.PI/2);
+  cy(0.45,0.45,0.25,10,mGray, 6.6,DY+4.6,SZ-1.2,Math.PI/2);
+  sp(0.35,8,mWhtL,-6.6,DY+4.6,SZ-1.45); sp(0.35,8,mWhtL,6.6,DY+4.6,SZ-1.45);
+
+  // ── 6. MAST ──
+  var mBY=DY+2.6+2.4+1.0, mZ=SZ+0.2;
+  cy(0.28,0.28,8.5,8,mWhite,0,mBY+4.25,mZ);
+  cy(0.18,0.18,7.0,8,mWhite,0,mBY+8.5+3.5,mZ);
+  cy(0.08,0.04,2.5,6,mWhite,0,mBY+8.5+7+1.25,mZ);
+  bx(3.2,0.28,3.2,mGray,0,mBY+8.0,mZ);
+  bx(4.5,0.15,0.15,mWhite,0,mBY+12.5,mZ);
+  var radM=new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,0.28,16),mDGray);
+  radM.rotation.z=Math.PI/2; radM.position.set(0,mBY+15.5,mZ); G.add(radM);
+  bx(6.0,0.22,0.22,mDGray,0,mBY+15.5,mZ);
+  sp(0.28,8,mWhtL,0,mBY+17.8,mZ);
+  sp(0.22,8,mRedL,-3.0,mBY+12.5,mZ); sp(0.22,8,mGrnL,3.0,mBY+12.5,mZ);
+  cy(0.04,0.02,4.5,4,mWhite,1.8,mBY+19.5,mZ);
+  cy(0.04,0.02,3.5,4,mWhite,-1.5,mBY+19.8,mZ);
+
+// ★ 1. 선체에 영향을 주지 않는 순수 노란색 전구 만들기
+  window.strobeMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.4, 16, 16), 
+    new THREE.MeshBasicMaterial({ color: 0xffcc00 }) // 노란색
+  );
+  window.strobeMesh.position.set(0, 31.0, -3.8); // 위치는 그대로!
+  
+  // ★ 2. 코드로 직접 "별 모양 빛 갈라짐" 이미지 그리기 (도화지 세팅)
+  var canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 128;
+  var ctx = canvas.getContext('2d');
+
+  // 은은한 둥근 노란색 후광 깔아주기
+  var grd = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(255, 255, 255, 1)');     // 중심은 하얗게
+  grd.addColorStop(0.2, 'rgba(255, 204, 0, 0.8)');   // 살짝 퍼지는 노란색
+  grd.addColorStop(1, 'rgba(255, 204, 0, 0)');       // 끝은 투명하게
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, 128, 128);
+
+  // 날카로운 4각 별(십자) 모양 그리기 (빛이 뻗어나가는 느낌)
+  ctx.beginPath();
+  ctx.moveTo(64, 10);  ctx.lineTo(68, 60);  ctx.lineTo(118, 64); ctx.lineTo(68, 68);
+  ctx.lineTo(64, 118); ctx.lineTo(60, 68);  ctx.lineTo(10, 64);  ctx.lineTo(60, 60);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fill();
+
+  var starTex = new THREE.Texture(canvas);
+  starTex.needsUpdate = true;
+
+  // ★ 3. 항상 카메라를 쳐다보는 평면(Sprite)에 별 모양 텍스처 입혀서 전구에 달기
+  var starMat = new THREE.SpriteMaterial({
+    map: starTex,
+    color: 0xffffff,
+    transparent: true,
+    blending: THREE.AdditiveBlending, // 선체는 안 밝아지고 자기 혼자만 빛남!
+    depthWrite: false // 기둥에 파묻혀 잘리는 현상 방지
+  });
+
+  var starSprite = new THREE.Sprite(starMat);
+  starSprite.scale.set(4.0, 4.0, 1.0); // 별빛의 크기 (마음에 안 드시면 이 숫자를 조절하세요!)
+  window.strobeMesh.add(starSprite); // 전구에 별을 찰싹 붙임
+
+  window.strobeMesh.visible = false; 
+  G.add(window.strobeMesh);
+
+
+
+
+
+
+  // ── 7. FUNNELS ──
+ // cy(0.85,0.75,3.0,12,mDGray,-2.2,DY+4.5,SZ+2.0);
+  // cy(0.85,0.75,3.0,12,mDGray, 2.2,DY+4.5,SZ+2.0);
+//  cy(1.05,0.85,0.45,12,mBlack,-2.2,DY+6.1,SZ+2.0);
+ // cy(1.05,0.85,0.45,12,mBlack, 2.2,DY+6.1,SZ+2.0);
+ // cy(0.88,0.88,0.5,12,mOrange,-2.2,DY+4.0,SZ+2.0);
+//  cy(0.88,0.88,0.5,12,mOrange, 2.2,DY+4.0,SZ+2.0);
+
+ // ── 8. DECK EQUIPMENT (갑판 장비)  *** 수정을 해야 하는 부분 *** ──
+  bx(6.5,1.2,3.0,mDGray,0,DY+0.6,9.5);
+  var wDr=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,5.5,14),mDGray);
+  wDr.rotation.z=Math.PI/2; wDr.position.set(0,DY+1.5,9.5); G.add(wDr);
+ // ★ [수정] 좌우 노란 점을 일직선으로 연결하는 토잉 레일 (쇠파이프 형태)
+  // 원통(Cylinder)을 사용하여 길이 12m(좌측 -6에서 우측 +6까지)짜리 일직선 바를 만듭니다.
+  var aGeo = new THREE.CylinderGeometry(0.42, 0.42, 12.0, 12); 
+  var aM = new THREE.Mesh(aGeo, mDGray);
+  
+  // 원통은 기본적으로 위아래(Y축)로 서 있으므로, 90도 회전시켜서 가로(X축)로 눕힙니다.
+  aM.rotation.z = Math.PI / 2; 
+  
+  // 높이(Y)를 노란 점과 동일한 DY+0.5로, 중심축(Z)을 노란 점 위치인 13으로 맞춥니다.
+  aM.position.set(0, DY+0.5, 13); 
+  G.add(aM);
+
+  cy(0.5,0.5,0.9,8,mYellow,0,DY+0.45,13);
+  [[-6.0,-15],[6.0,-15],[-6.0,13],[6.0,13],[-6.0,-1],[6.0,-1]].forEach(function(p){
+    cy(0.32,0.38,1.0,8,mYellow,p[0],DY+0.5,p[1]);
+    bx(1.0,0.2,0.2,mYellow,p[0],DY+1.1,p[1]);
+  });
+  cy(0.08,0.08,3.5,6,mWhite,0,DY+1.75,15.0); sp(0.25,8,mWhtL,0,DY+3.5,15.0);
+  bx(4.0,1.0,1.8,mDGray,0,DY+0.5,-16.5);
+  cy(0.55,0.55,3.8,12,mDGray,0,DY+1.1,-16.5,undefined,undefined,Math.PI/2);
+  cy(0.32,0.32,0.6,8,mBlack,-1.6,DY+0.3,-18.5);
+  cy(0.32,0.32,0.6,8,mBlack, 1.6,DY+0.3,-18.5);
+  sp(0.25,8,mWhtL,0,DY+0.45,-21.8);
+  [[-7.8,DY+3.0,-9],[7.8,DY+3.0,-9],[-7.8,DY+3.0,3],[7.8,DY+3.0,3]].forEach(function(p){
+    tr(0.6,0.18,14,mLifeR,p[0],p[1],p[2],0,undefined);
+  });
+
+
+
+  // ── 9. RAILINGS ──
+  var railMat=mWhite;
+  for(var rz=-14;rz<=13;rz+=3.5){
+    cy(0.07,0.07,1.3,4,railMat,-6.7,DY+0.65,rz);
+    cy(0.07,0.07,1.3,4,railMat, 6.7,DY+0.65,rz);
+  }
+  for(var rs=0;rs<9;rs++){
+    var rzA=-14+rs*3.5;
+    var rHG=new THREE.CylinderGeometry(0.055,0.055,3.5,4);
+    var rp=new THREE.Mesh(rHG,railMat); rp.rotation.x=Math.PI/2; rp.position.set(-6.7,DY+1.3,rzA+1.75); G.add(rp);
+    var rs2m=new THREE.Mesh(rHG.clone(),railMat); rs2m.rotation.x=Math.PI/2; rs2m.position.set(6.7,DY+1.3,rzA+1.75); G.add(rs2m);
+    var rHG2=new THREE.CylinderGeometry(0.04,0.04,3.5,4);
+    var rp2=new THREE.Mesh(rHG2,railMat); rp2.rotation.x=Math.PI/2; rp2.position.set(-6.7,DY+0.9,rzA+1.75); G.add(rp2);
+    var rs3m=new THREE.Mesh(rHG2.clone(),railMat); rs3m.rotation.x=Math.PI/2; rs3m.position.set(6.7,DY+0.9,rzA+1.75); G.add(rs3m);
+  }
+
+  // ── 10. ASD PODS ──
+  cy(1.0,0.8,2.5,12,mBlack,-3.5,-1.5,13,Math.PI/2);
+  cy(1.0,0.8,2.5,12,mBlack, 3.5,-1.5,13,Math.PI/2);
+  tr(1.2,0.2,12,mDGray,-3.5,-1.5,13.5,Math.PI/2,undefined);
+  tr(1.2,0.2,12,mDGray, 3.5,-1.5,13.5,Math.PI/2,undefined);
+
+})(ownShipGrp);
+
+// ASD 포드 그룹 (호환성 유지)
+window.zDL=new THREE.Group(); window.zDL.position.set(-3.5, 0, 13); ownShipGrp.add(window.zDL);
+window.zDR=new THREE.Group(); window.zDR.position.set( 3.5, 0, 13); ownShipGrp.add(window.zDR);
+
 var WAKE_N = 6000;
 var wakeGeo = new THREE.BufferGeometry();
 var wakeP = new Float32Array(WAKE_N * 3);
@@ -373,7 +644,6 @@ function spawnWake(x,y,z,vx,vy,vz){
   wakeActive[i] = 1.0; wakeIdx++; wakeGeo.attributes.position.needsUpdate=true;
 }
 
-// ── 원본 항적 보존 ──
 var TRAIL_MAX=3000;
 var trailPts=new Float32Array(TRAIL_MAX*3);
 var trailGeo=new THREE.BufferGeometry();
@@ -397,17 +667,18 @@ var isThirdPersonView = true;
 function toggleView() {
   isThirdPersonView = !isThirdPersonView;
   var btn = document.getElementById('viewBtn');
-  if(isThirdPersonView) {btn.innerHTML='👁️ 시점: 드론뷰';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
-  else {btn.innerHTML='👁️ 시점: 1인칭';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
+  if(isThirdPersonView) {btn.innerHTML='👁️ Drone View';btn.style.color='#00ee88';btn.style.borderColor='rgba(0,238,136,0.5)';document.getElementById('winFrame').style.display='none';}
+  else {btn.innerHTML='👁️ Bridge View';btn.style.color='#ffcc00';btn.style.borderColor='rgba(200,150,0,0.5)';document.getElementById('winFrame').style.display='block';}
 }
 
-// ── ★ 물리 엔진 완벽 수정 (최고 15Knots 교정 포함) ──
+// ── ★ 물리 엔진 완벽 수정 (0도 추력, 횡방향 교정, 20% 변침저하, 15노트 최고속력 유지) ──
 var lt=0;
+
 function uP(){
   var n=Date.now();if(lt===0){lt=n;return;}var dt=Math.min((n-lt)/16.67,3);lt=n;
   
-  var pg=Math.pow(ship.pGov/10, 2), sg=Math.pow(ship.sGov/10, 2);
-  var pF=Math.pow(Math.abs(ship.pCPP)/27, 1.5), sF=Math.pow(Math.abs(ship.sCPP)/27, 1.5);
+  var pg=Math.pow(ship.pGov/10, 0.8), sg=Math.pow(ship.sGov/10, 0.8);
+  var pF=Math.pow(Math.abs(ship.pCPP)/27, 0.6), sF=Math.pow(Math.abs(ship.sCPP)/27, 0.6);
   
   var ptE = ship.pGov > 0 ? pg * pF * (ship.pCPP >= 0 ? 1 : -1) : 0;
   var sbE = ship.sGov > 0 ? sg * sF * (ship.sCPP >= 0 ? 1 : -1) : 0;
@@ -420,38 +691,55 @@ function uP(){
   var isComboPort = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st <= -25 && ship.st >= -55;
   var isComboStbd = Math.abs(ship.pt) < 15 && Math.abs(ship.sb) < 15 && ship.st >= 25 && ship.st <= 55;
 
-  var isSlidingPort = isCrabPort || isComboPort;
+var isSlidingPort = isCrabPort || isComboPort;
   var isSlidingStbd = isCrabStbd || isComboStbd;
   var isSliding = isSlidingPort || isSlidingStbd;
 
+  // [수정된 횡이동(슬라이딩) 물리 로직]
   if(isSliding) {
-    if(isSlidingPort) sfx = -(Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
-    else sfx = (Math.abs(ptE) + Math.abs(sbE)) * 0.8; 
-    sfy *= 0.1; 
-    ship.om *= 0.5; 
+    // 1. 너무 빨랐던 슬라이딩 속도를 확 줄입니다. (기존 0.8 -> 0.35)
+    // 입맛에 맞춰 더 느리게 하려면 0.25, 조금 더 빠르게 하려면 0.45 로 조절하십시오.
+    var slideForce = (Math.abs(ptE) + Math.abs(sbE)) * 0.30;
+    
+    if(isSlidingPort) sfx = -slideForce; 
+    else sfx = slideForce; 
+    
+    // 2. 전/후진 강제 차단(sfy *= 0.1) 삭제! 
+    // 이제 타각이 완벽한 대칭이 아니면 자연스럽게 앞뒤로 밀리게 됩니다.
+    
+    // 3. 회전력 강제 정지(ship.om *= 0.5) 삭제!
+    // 이제 좌우 출력이 다르면(한쪽 엔진을 더 세게 밀면) 선미가 돌아갑니다.
   }
 
   var cH=Math.cos(ship.hd), sH=Math.sin(ship.hd);
   
-  // ★ 최고 속력 RPM 750, CPP 26 기준 15.0 Knots 도달하도록 가속 상수 교정 (0.00836)
-  ship.vx+=(sfx*cH-sfy*sH)*0.00836*dt; 
-  ship.vy+=(sfx*sH+sfy*cH)*0.00836*dt;
+  ship.vx+=(sfx*cH-sfy*sH)*0.024*dt; 
+  ship.vy+=(sfx*sH+sfy*cH)*0.024*dt;
   
-  if(!isSliding) {
-    ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-16*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-16*(Math.sin(sbR)*sbE))*0.00003*dt;
-  }
+  // 4. [가장 중요한 수정] 회전력(타효) 계산 조건 해제!
+  // 원래는 if(!isSliding) 안에 갇혀있어서 슬라이딩 중에는 타효가 발생하지 않았습니다.
+  // 이제 무조건 물리 엔진이 회전력을 계산하도록 바깥으로 빼냈습니다.
+  ship.om+=((-3.5)*(-Math.cos(ptR)*ptE)-8*(Math.sin(ptR)*ptE)+3.5*(-Math.cos(sbR)*sbE)-8*(Math.sin(sbR)*sbE))*0.00007*dt;
   
   var turnRate = Math.abs(ship.om);
-  var fwdDrag = Math.max(0.80, 0.98 - turnRate * 2.5); 
-  
-  ship.vx*=Math.pow(fwdDrag,dt); ship.vy*=Math.pow(fwdDrag,dt); ship.om*=Math.pow(0.975,dt);
+
+  // ★ 1.0을 0.2로 줄여서, 배가 팽이처럼 제자리에서 돌지 않고 앞으로 넓게 원을 그리게 합니다!
+  var fwdDrag = Math.max(0.80, 0.94 - turnRate * 0.13);
+  ship.vx*=Math.pow(fwdDrag,dt); 
+ship.vy*=Math.pow(fwdDrag,dt); 
+ship.om*=Math.pow(0.975,dt);
   var fV=ship.vx*sH-ship.vy*cH, lV=ship.vx*cH+ship.vy*sH; 
   
   var latDrag = isSliding ? 0.98 : 0.93;
   lV*=Math.pow(latDrag,dt);
   
-  ship.vx=fV*sH+lV*cH; ship.vy=-fV*cH+lV*sH; 
-  ship.x+=ship.vx*dt; ship.y+=ship.vy*dt; ship.hd+=ship.om*dt;
+  ship.vx=fV*sH+lV*cH; 
+ ship.vy=-fV*cH+lV*sH; 
+  ship.x+=ship.vx*dt; 
+  ship.y+=ship.vy*dt; 
+  ship.hd+=ship.om*dt;
+
+
 
   trailTimer+=dt;
   if(trailTimer>15){trailTimer=0;addTrailPoint();}
@@ -461,7 +749,6 @@ function uP(){
   var pTz = ship.y + rZ*(-3.5) + fZ*(-15);
   var sTx = ship.x + rX*(3.5) + fX*(-15);
   var sTz = ship.y + rZ*(3.5) + fZ*(-15);
-
   if(Math.abs(ptE)>0.01 && Math.random()<0.9) {
     var pWF = -Math.cos(ptR)*ptE*12, pWR = -Math.sin(ptR)*ptE*12;
     for(var i=0; i<4; i++) spawnWake(pTx, 0.5, pTz, pWF*fX+pWR*rX, 0, pWF*fZ+pWR*rZ);
@@ -480,14 +767,35 @@ function updateBridgeView(t){
   var pos=oceanGeo.attributes.position;for(var wi=0;wi<pos.count;wi++){var wx=pos.getX(wi),wz=pos.getZ(wi);pos.setY(wi,oceanOrigY[wi]+Math.sin(wx*0.04+t)*0.5+Math.sin(wz*0.03+t*0.8)*0.3);}pos.needsUpdate=true;
   ocean.position.x=ship.x;ocean.position.z=ship.y;
   var fX=Math.sin(ship.hd),fZ=-Math.cos(ship.hd);
+// ★ 3. 클러치 작동 시 "전구 보이기/숨기기(visible)" 깜빡임 로직
+  if (window.strobeMesh) {
+    // 좌/우현 거버너 중 하나라도 들어가면 클러치 ON
+    var isClutchOn = (ship.pGov > 0 || ship.sGov > 0);
+    
+    if (isClutchOn) {
+      // 1초 주기로 0.5초는 나타나고, 0.5초는 사라짐 (확실한 점멸!)
+      window.strobeMesh.visible = (t % 1.0 < 0.5);
+    } else {
+      // 클러치를 빼면 즉시 화면에서 전구를 숨김
+      window.strobeMesh.visible = false;
+    }
+  }
+
+
+
+
   
-  if(isThirdPersonView) {
+if(isThirdPersonView) {
     camera.position.set(ship.x - fX*40, 150, ship.y - fZ*40);
     camera.lookAt(ship.x + fX*10, 0, ship.y + fZ*10);
   } else {
-    camera.position.set(ship.x, 14, ship.y);
-    camera.lookAt(ship.x + fX*20, 5, ship.y + fZ*20);
+ var camHeight = 10.8; // 카메라를 지붕(14)에서 선실 내부(8.8)로 푹 낮춥니다.
+    var camForward = 7.5; // 카메라를 선체 중앙에서 앞유리창 쪽으로 6.5m 바짝 당겨 앉습니다.
+    
+    camera.position.set(ship.x + fX * camForward, camHeight, ship.y + fZ * camForward);
+    camera.lookAt(ship.x + fX * 30, 5, ship.y + fZ * 30); // 시선은 바다 멀리(30m 앞)를 봅니다.
   }
+
   
   ownShipGrp.position.set(ship.x, 0, ship.y);
   ownShipGrp.rotation.y = -ship.hd;
@@ -504,7 +812,7 @@ function updateBridgeView(t){
 }
 
 function uH(){
-  var spd=Math.hypot(ship.vx,ship.vy)*20;var hdgDeg=Math.round(((ship.hd*R2D)+360)%360);
+  var spd=Math.hypot(ship.vx,ship.vy)*19.5;var hdgDeg=Math.round(((ship.hd*R2D)+360)%360);
   document.getElementById('valHdg').textContent=('000'+hdgDeg).slice(-3)+'\u00B0';document.getElementById('valSpd').textContent=spd.toFixed(1)+' kts';
   var st=Math.round(ship.st),e0=document.getElementById('valStr');if(st<0)e0.textContent='P'+Math.abs(st)+'\u00B0';else if(st>0)e0.textContent='S'+st+'\u00B0';else e0.textContent='0\u00B0';
   document.getElementById('valPRpm').textContent=govOn(ship.pGov)?(govRpm(ship.pGov)+' RPM'):'OFF';
@@ -537,7 +845,6 @@ function mainLoop(){
 }
 mainLoop();
 </script>
-<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">ⓒ 2026 G.Y. Lee. All rights reserved. </div>
-
+<div style="position:fixed;bottom:2px;right:8px;font-size:9px;color:rgba(255,255,255,0.85);pointer-events:none;z-index:5;font-family:monospace">© 2026  G.Y.Lee. All rights reserved </div>
 </body>
 </html>
